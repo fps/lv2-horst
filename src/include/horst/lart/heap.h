@@ -4,7 +4,7 @@
 #include <list>
 #include <iostream>
 
-#include <lart/junk.h>
+#include <horst/lart/junk.h>
 
 namespace lart
 {

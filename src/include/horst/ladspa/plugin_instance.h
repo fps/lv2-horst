@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-#include <ladspamm1/plugin.h>
+#include <horst/ladspa/plugin.h>
 
 namespace ladspamm1
 {

@@ -3,6 +3,7 @@
 
 #include <jack/ringbuffer.h>
 #include <memory>
+#include <vector>
 
 namespace lart
 {

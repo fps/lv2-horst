@@ -8,7 +8,7 @@
 #include <iostream>
 #include <cmath>
 
-#include <ladspamm1/dl.h>
+#include <horst/ladspa/dl.h>
 
 namespace ladspamm1
 {
