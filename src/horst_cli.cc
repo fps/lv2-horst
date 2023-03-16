@@ -54,12 +54,6 @@ extern "C" {
   }
 }
 
-struct state {
-  jack_client_t *m_jack_client;
-};
-
-state the_state;
-
 int main(int argc, char *argv[]) {
   try {
     namespace po = boost::program_options;
@@ -83,11 +77,7 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
   }
 
-  the_state.m_jack_client = jack_client_open (the_options.m_jack_client_name.c_str(), JackUseExactName, 0);
-  if (the_state.m_jack_client == 0) {
-    std::cerr << "Failed to open jack client. Exiting.\n";
-    return EXIT_FAILURE;
-  }
+  horst::horst_jack the_horst_jack(the_options.m_jack_client_name);
 
   bool done = false;
   while (!done) {
@@ -107,5 +97,4 @@ int main(int argc, char *argv[]) {
       std::cerr << "Error handling input: " << e.what() << "\n";
     }
   }
-  jack_client_close (the_state.m_jack_client);
 }
