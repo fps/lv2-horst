@@ -23,5 +23,13 @@ namespace horst {
 
   struct rack {
     std::vector<unit_ptr> units;
-  }
+  };
+
+  typedef std::shared_ptr<lart::junk<rack>> rack_ptr;
+
+  struct horst {
+    std::vector<rack_ptr> m_racks;
+  };
+
+  typedef std::shared_ptr<lart::junk<horst>> horst_ptr;
 }
