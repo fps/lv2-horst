@@ -1,1 +1,1 @@
-PYTHONPATH=./src/ python3 test_horst_python.py
+PYTHONPATH=./src/ python3 $* test_horst_python.py 
