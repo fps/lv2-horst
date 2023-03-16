@@ -94,13 +94,43 @@ namespace horst {
     ~horst_jack () {
       jack_client_close (m_jack_client);
     }
-  };
 
+    void insert_rack (int rack_index) {
+  
+    }
+  
+    void remove_rack (int rack_index) {
+  
+    }
+  
+    void insert_lv2_plugin (int rack_index, int plugin_index, std::string &uri) {
+  
+    }
+  
+    void insert_ladspa_plugin (int rack_index, int plugin_index, std::string library_file_name, std::string plugin_label) {
+  
+    }
+  
+    void remove_plugin (int rack_index, int plugin_index) {
+  
+    }
+  
+    void set_plugin_parameter (int rack_index, int plugin_index, int port_index, float value) {
+  
+    }
+  };
 }
 
 namespace bp = boost::python;
 BOOST_PYTHON_MODULE(horst)
 {
-  bp::class_<horst::horst_jack>("horst", bp::init<std::string>());
+  bp::class_<horst::horst_jack>("horst", bp::init<std::string>())
+    .def ("insert_rack", &horst::horst_jack::insert_rack)
+    .def ("remove_rack", &horst::horst_jack::insert_rack)
+    .def ("insert_ladspa_plugin", &horst::horst_jack::insert_rack)
+    .def ("insert_lv2_plugin", &horst::horst_jack::insert_rack)
+    .def ("remove_plugin", &horst::horst_jack::insert_rack)
+    .def ("set_plugin_parameter", &horst::horst_jack::insert_rack)
+  ;
 }
 
