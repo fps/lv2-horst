@@ -100,7 +100,7 @@ namespace horst {
       m_lilv_plugin (new lilv_plugin (lilv_plugins, lilv_uri_node_ptr (new lilv_uri_node (lilv_world, uri)))),
       m_uri (uri)
     {
-      
+      m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));  
     }
 
     virtual void instantiate (double sample_rate) {
