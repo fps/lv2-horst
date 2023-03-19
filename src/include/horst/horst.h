@@ -32,8 +32,8 @@ namespace horst {
 
   struct lilv_plugins {
     const LilvPlugins *m;
-    lilv_plugins (lilv_world_ptr world) :
-      m (lilv_world_get_all_plugins (world->m)) {
+    lilv_plugins (const lilv_world &world) :
+      m (lilv_world_get_all_plugins (world.m)) {
     }
   };
 
@@ -41,8 +41,8 @@ namespace horst {
 
   struct lilv_uri_node {
     LilvNode *m;
-    lilv_uri_node (lilv_world_ptr world, const std::string &uri) {
-      m = lilv_new_uri (world->m, uri.c_str());
+    lilv_uri_node (const lilv_world &world, const std::string &uri) {
+      m = lilv_new_uri (world.m, uri.c_str());
       if (m == 0) throw std::runtime_error ("Failed to create lilv uri node. URI: " + uri);
     }
 
@@ -55,8 +55,8 @@ namespace horst {
 
   struct lilv_plugin {
     const LilvPlugin *m;
-    lilv_plugin (lilv_plugins_ptr plugins, lilv_uri_node_ptr node) :
-      m (lilv_plugins_get_by_uri (plugins->m, node->m)) {
+    lilv_plugin (const lilv_plugins &plugins, const lilv_uri_node &node) :
+      m (lilv_plugins_get_by_uri (plugins.m, node.m)) {
     }
   };
 
@@ -71,6 +71,7 @@ namespace horst {
     float m_default_value;
     float m_maximum_value;
     bool m_is_logarithmic;
+    std::string m_name;
   };
 
   struct plugin_base {
@@ -90,30 +91,51 @@ namespace horst {
   };
 
   struct lv2_plugin : public plugin_base {
-    lilv_plugin_ptr m_lilv_plugin;
+    const lilv_uri_node m_lilv_plugin_uri;
+    const lilv_plugin m_lilv_plugin;
 
-    std::string m_uri;
+    const std::string m_uri;
+    std::string m_name;
 
     LilvInstance *m_lilv_instance;
 
-    lv2_plugin (lilv_world_ptr lilv_world, lilv_plugins_ptr lilv_plugins, const std::string &uri) : 
-      m_lilv_plugin (new lilv_plugin (lilv_plugins, lilv_uri_node_ptr (new lilv_uri_node (lilv_world, uri)))),
+    lv2_plugin (const lilv_world &world, const lilv_plugins &plugins, const std::string &uri) : 
+      m_lilv_plugin_uri (world, uri),
+      m_lilv_plugin (plugins, m_lilv_plugin_uri),
       m_uri (uri)
     {
-      m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));  
+      lilv_uri_node input (world, LILV_URI_INPUT_PORT);
+      lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
+      lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
+      lilv_uri_node control (world, LILV_URI_CONTROL_PORT);
+
+      lilv_uri_node doap_name (world, "http://usefulinc.com/ns/doap#name");
+      LilvNode *name_node = lilv_world_get (world.m, m_lilv_plugin_uri.m, doap_name.m, NULL);
+      if (name_node == 0) throw std::runtime_error ("Failed to get name of plugin. URI: " + m_uri);
+      m_name = lilv_node_as_string (name_node);
+
+      m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin.m));  
+      for (size_t index = 0; index < m_port_properties.size(); ++index) {
+        const LilvPort *lilv_port = lilv_plugin_get_port_by_index (m_lilv_plugin.m, index);
+        port_properties &p = m_port_properties[index];
+        p.m_name = lilv_node_as_string (lilv_port_get_symbol (m_lilv_plugin.m, lilv_port));
+
+        p.m_is_audio = lilv_port_is_a (m_lilv_plugin.m, lilv_port, audio.m);
+        p.m_is_control = lilv_port_is_a (m_lilv_plugin.m, lilv_port, control.m);
+        p.m_is_input = lilv_port_is_a (m_lilv_plugin.m, lilv_port, input.m);
+        p.m_is_output = lilv_port_is_a (m_lilv_plugin.m, lilv_port, output.m);
+      }
     }
 
+    virtual const std::string &get_name () const { return m_name; }
+
     virtual void instantiate (double sample_rate) {
-      m_lilv_instance = lilv_plugin_instantiate (m_lilv_plugin->m, sample_rate, 0);
+      m_lilv_instance = lilv_plugin_instantiate (m_lilv_plugin.m, sample_rate, 0);
       if (m_lilv_instance == 0) throw std::runtime_error ("Failed to instantiate plugin. URI: " + m_uri);
     }
 
     virtual void set_control_port_value (int port_index, float value) {
 
-    }
-
-    virtual const std::string &get_name () const {
-      return m_uri;
     }
   };
 
@@ -130,7 +152,7 @@ namespace horst {
 
     unit (const std::string &jack_client_name, const std::vector<port_properties> &port_properties) :
       m_commands (1024) {
-      m_jack_client = jack_client_open (jack_client_name.c_str(), JackUseExactName, 0);
+      m_jack_client = jack_client_open (("horst-" + jack_client_name).c_str(), JackUseExactName, 0);
       if (m_jack_client == 0) throw std::runtime_error ("Failed to open jack client. Name: " + jack_client_name);
     }
 
@@ -146,18 +168,32 @@ namespace horst {
     plugin_unit (plugin_ptr plugin) :
       unit (plugin->get_name (), plugin->m_port_properties),
       m_plugin (plugin) {
+      for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
+        port_properties &p = m_plugin->m_port_properties[index];
+        if (p.m_is_audio) {
+          if (p.m_is_input) {
+            jack_port_t *port = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            if (port == 0) throw std::runtime_error (std::string ("Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
+            m_jack_ports.push_back(port);
+          } else {
+            jack_port_t *port = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            if (port == 0) throw std::runtime_error (std::string ("Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
+            m_jack_ports.push_back(port);
+          }
+        }
+      }
+
       plugin->instantiate (jack_get_sample_rate (m_jack_client));
     }
   };
 
   struct horst_jack {
-    lilv_world_ptr m_lilv_world;
-    lilv_plugins_ptr m_lilv_plugins;
+    lilv_world m_lilv_world;
+    lilv_plugins m_lilv_plugins;
     std::list<unit_ptr> m_units;
 
     horst_jack () :
-      m_lilv_world (lilv_world_ptr (new lilv_world)), 
-      m_lilv_plugins (lilv_plugins_ptr (new lilv_plugins (m_lilv_world))) {
+      m_lilv_plugins (m_lilv_world) {
       /*
       m_jack_client = jack_client_open (jack_client_name.c_str (), JackUseExactName, 0);
       if (m_jack_client == 0) {
