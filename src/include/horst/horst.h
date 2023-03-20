@@ -39,9 +39,12 @@ namespace horst {
   typedef std::shared_ptr<lilv_plugins> lilv_plugins_ptr;
 
   struct lilv_uri_node {
+    const std::string m_uri;
     LilvNode *m;
-    lilv_uri_node (const lilv_world &world, const std::string &uri) {
-      m = lilv_new_uri (world.m, uri.c_str());
+
+    lilv_uri_node (const lilv_world &world, const std::string &uri) :
+      m_uri (uri),
+      m (lilv_new_uri (world.m, uri.c_str ())) {
       if (m == 0) throw std::runtime_error ("Failed to create lilv uri node. URI: " + uri);
     }
 
@@ -60,6 +63,19 @@ namespace horst {
   };
 
   typedef std::shared_ptr<lilv_plugin> lilv_plugin_ptr;
+
+  struct lilv_plugin_instance {
+    LilvInstance *m;
+    lilv_plugin_instance (const lilv_plugin &plugin, double sample_rate) :
+      m (lilv_plugin_instantiate (plugin.m, sample_rate, 0))
+    {
+      if (m == 0) throw std::runtime_error ("Failed to instantiate plugin");
+    }
+
+    ~lilv_plugin_instance () {
+      lilv_instance_free (m);
+    }
+  };
 
   struct port_properties {
     bool m_is_audio;
@@ -101,7 +117,8 @@ namespace horst {
     lv2_plugin (const lilv_world &world, const lilv_plugins &plugins, const std::string &uri) : 
       m_lilv_plugin_uri (world, uri),
       m_lilv_plugin (plugins, m_lilv_plugin_uri),
-      m_uri (uri)
+      m_uri (uri),
+      m_lilv_instance (0)
     {
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
@@ -130,6 +147,10 @@ namespace horst {
     virtual const std::string &get_name () const { return m_name; }
 
     virtual void instantiate (double sample_rate) {
+      if (m_lilv_instance != 0) {
+        lilv_instance_free (m_lilv_instance);
+      }
+
       m_lilv_instance = lilv_plugin_instantiate (m_lilv_plugin.m, sample_rate, 0);
       if (m_lilv_instance == 0) throw std::runtime_error ("Failed to instantiate plugin. URI: " + m_uri);
     }
@@ -139,7 +160,9 @@ namespace horst {
     }
 
     virtual ~lv2_plugin () {
-      lilv_instance_free (m_lilv_instance);
+      if (m_lilv_instance) {
+        lilv_instance_free (m_lilv_instance);
+      }
     }
   };
 
@@ -150,44 +173,40 @@ namespace horst {
   }
 
   struct unit {
-    lart::ringbuffer<std::function<void ()>> m_commands;
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
 
-    unit (const std::string &jack_client_name, const std::vector<port_properties> &port_properties) :
-      m_commands (1024) {
+    unit (const std::string &jack_client_name, const std::vector<port_properties> &port_properties) {
       m_jack_client = jack_client_open (jack_client_name.c_str(), JackUseExactName, 0);
       if (m_jack_client == 0) throw std::runtime_error ("Failed to open jack client. Name: " + jack_client_name);
+    }
 
+    void set_callbacks () {
       int ret;
+
+      ret = jack_set_sample_rate_callback (m_jack_client, unit_jack_sample_rate_callback, (void *)this);
+      if (ret != 0) {
+        throw std::runtime_error ("Failed to set sample rate callback");
+      }
+
       ret = jack_set_process_callback (m_jack_client, unit_jack_process_callback, (void *)this);
       if (ret != 0) {
-        jack_client_close (m_jack_client);
         throw std::runtime_error ("Failed to set buffer size callback");
       }
 
       ret = jack_set_buffer_size_callback (m_jack_client, unit_jack_buffer_size_callback, (void *)this);
       if (ret != 0) {
-        jack_client_close (m_jack_client);
         throw std::runtime_error ("Failed to set buffer size callback");
       }
-
-      ret = jack_set_sample_rate_callback (m_jack_client, unit_jack_sample_rate_callback, (void *)this);
-      if (ret != 0) {
-        jack_client_close (m_jack_client);
-        throw std::runtime_error ("Failed to set sample rate callback");
-      }
     }
-
-    virtual int process_callback (jack_nframes_t nframes) = 0;
-
-    virtual int buffer_size_callback (jack_nframes_t buffer_size) = 0;
-
-    virtual int sample_rate_callback (jack_nframes_t sample_rate) = 0;
 
     virtual ~unit () {
       jack_client_close (m_jack_client);
     }
+
+    virtual int process_callback (jack_nframes_t nframes) = 0;
+    virtual int buffer_size_callback (jack_nframes_t buffer_size) = 0;
+    virtual int sample_rate_callback (jack_nframes_t sample_rate) = 0;
   };
 
   extern "C" {
@@ -213,6 +232,8 @@ namespace horst {
     plugin_unit (plugin_ptr plugin, const std::string &jack_client_name = "") :
       unit (jack_client_name == "" ? ("horst:" + plugin->get_name ()) : jack_client_name, plugin->m_port_properties),
       m_plugin (plugin) {
+      set_callbacks ();
+
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
         if (p.m_is_audio) {
@@ -251,64 +272,11 @@ namespace horst {
 
     horst_jack () :
       m_lilv_plugins (m_lilv_world) {
-      /*
-      m_jack_client = jack_client_open (jack_client_name.c_str (), JackUseExactName, 0);
-      if (m_jack_client == 0) {
-        throw std::runtime_error ("Failed to open jack client");
-      }
-
-      int ret;
-
-      ret = jack_set_process_callback (m_jack_client, horst_jack_process_callback, (void *)this);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to register process callback");
-      }
-
-      ret = jack_set_buffer_size_callback(m_jack_client, horst_jack_buffer_size_callback, (void *)this);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to register buffer size callback");
-      }
-
-      ret = jack_set_sample_rate_callback(m_jack_client, horst_jack_buffer_size_callback, (void *)this);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to register sample rate callback");
-      }
-
-      ret = jack_activate (m_jack_client);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to activate jack client");
-      }
-      */
     }
 
     ~horst_jack () {
-      /*
-      assert (pthread_self () == m_self);
-      jack_client_close (m_jack_client);
-      */
-    }
 
-    /*
-    void insert_rack (int rack_index) {
-      if ((size_t)rack_index > m_horst.m_racks.size ()) {
-        throw std::runtime_error ("Rack index out of bounds");
-      }
-      auto it = m_horst.m_racks.begin ();
-      for (int index = 0; index < rack_index; ++index) ++it;
-      m_horst.m_racks.insert (it, std::make_shared<rack> (rack ()));
-
-      horst_ptr the_new_horst = m_heap.add (horst (m_horst)); 
-      m_commands.write([the_new_horst, this]() mutable { this->m_processing_horst = the_new_horst; the_new_horst = horst_ptr(); }); 
     }
-  
-    void remove_rack (int rack_index) {
-  
-    }
-
-    int number_of_racks () {
-      return 0;
-    }
-    */
   
     void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name = "") {
       auto it = m_units.begin ();
@@ -332,31 +300,5 @@ namespace horst {
       return 0;
     }
   };
-
-  extern "C" {
-    /*
-    int horst_jack_process_callback (jack_nframes_t nframes, void *arg) {
-      horst_jack &the_horst_jack = *((horst_jack*)arg);
-
-      while (the_horst_jack.m_commands.can_read ()) {
-        the_horst_jack.m_commands.snoop () ();
-        the_horst_jack.m_commands.read_advance ();
-      } 
-      return 0;
-    }
-    
-
-    int horst_jack_buffer_size_callback (jack_nframes_t buffer_size, void *arg) {
-      // horst &the_horst = *((horst*)arg);
-      return 0;
-    }
-
-    int horst_jack_sample_rate_callback (jack_nframes_t sample_rate, void *arg) {
-      // horst &the_horst = *((horst*)arg);
-      return 0;
-    }
-    */
-  }
-
 }
 
