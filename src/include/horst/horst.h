@@ -4,7 +4,6 @@
 #include <list>
 #include <string>
 #include <functional>
-#include <boost/python.hpp>
 #include <horst/lart/junk.h>
 #include <horst/lart/ringbuffer.h>
 #include <horst/lart/heap.h>
@@ -76,7 +75,7 @@ namespace horst {
 
   struct plugin_base {
     std::vector<port_properties> m_port_properties;
-
+  
     virtual void set_control_port_value (int port_index, float value) = 0;
     virtual const std::string &get_name () const = 0;
     virtual void instantiate (double sample_rate) = 0;
@@ -109,11 +108,6 @@ namespace horst {
       lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
       lilv_uri_node control (world, LILV_URI_CONTROL_PORT);
 
-      lilv_uri_node doap_name (world, "http://usefulinc.com/ns/doap#name");
-      LilvNode *name_node = lilv_world_get (world.m, m_lilv_plugin_uri.m, doap_name.m, NULL);
-      if (name_node == 0) throw std::runtime_error ("Failed to get name of plugin. URI: " + m_uri);
-      m_name = lilv_node_as_string (name_node);
-
       m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin.m));  
       for (size_t index = 0; index < m_port_properties.size(); ++index) {
         const LilvPort *lilv_port = lilv_plugin_get_port_by_index (m_lilv_plugin.m, index);
@@ -125,6 +119,12 @@ namespace horst {
         p.m_is_input = lilv_port_is_a (m_lilv_plugin.m, lilv_port, input.m);
         p.m_is_output = lilv_port_is_a (m_lilv_plugin.m, lilv_port, output.m);
       }
+
+      lilv_uri_node doap_name (world, "http://usefulinc.com/ns/doap#name");
+      LilvNode *name_node = lilv_world_get (world.m, m_lilv_plugin_uri.m, doap_name.m, 0);
+      if (name_node == 0) throw std::runtime_error ("Failed to get name of plugin. URI: " + m_uri);
+      m_name = lilv_node_as_string (name_node);
+      lilv_node_free (name_node);
     }
 
     virtual const std::string &get_name () const { return m_name; }
@@ -136,6 +136,10 @@ namespace horst {
 
     virtual void set_control_port_value (int port_index, float value) {
 
+    }
+
+    virtual ~lv2_plugin () {
+      lilv_instance_free (m_lilv_instance);
     }
   };
 
@@ -152,21 +156,62 @@ namespace horst {
 
     unit (const std::string &jack_client_name, const std::vector<port_properties> &port_properties) :
       m_commands (1024) {
-      m_jack_client = jack_client_open (("horst-" + jack_client_name).c_str(), JackUseExactName, 0);
+      m_jack_client = jack_client_open (jack_client_name.c_str(), JackUseExactName, 0);
       if (m_jack_client == 0) throw std::runtime_error ("Failed to open jack client. Name: " + jack_client_name);
+
+      int ret;
+      ret = jack_set_process_callback (m_jack_client, unit_jack_process_callback, (void *)this);
+      if (ret != 0) {
+        jack_client_close (m_jack_client);
+        throw std::runtime_error ("Failed to set buffer size callback");
+      }
+
+      ret = jack_set_buffer_size_callback (m_jack_client, unit_jack_buffer_size_callback, (void *)this);
+      if (ret != 0) {
+        jack_client_close (m_jack_client);
+        throw std::runtime_error ("Failed to set buffer size callback");
+      }
+
+      ret = jack_set_sample_rate_callback (m_jack_client, unit_jack_sample_rate_callback, (void *)this);
+      if (ret != 0) {
+        jack_client_close (m_jack_client);
+        throw std::runtime_error ("Failed to set sample rate callback");
+      }
     }
+
+    virtual int process_callback (jack_nframes_t nframes) = 0;
+
+    virtual int buffer_size_callback (jack_nframes_t buffer_size) = 0;
+
+    virtual int sample_rate_callback (jack_nframes_t sample_rate) = 0;
 
     virtual ~unit () {
       jack_client_close (m_jack_client);
     }
   };
 
+  extern "C" {
+    int unit_jack_process_callback (jack_nframes_t nframes, void *arg) {
+      return ((unit *)arg)->process_callback (nframes);
+    }
+
+    int unit_jack_buffer_size_callback (jack_nframes_t buffer_size, void *arg) {
+      return ((unit *)arg)->buffer_size_callback (buffer_size);
+    }
+
+    int unit_jack_sample_rate_callback (jack_nframes_t sample_rate, void *arg) {
+      return ((unit *)arg)->sample_rate_callback (sample_rate);
+    }
+  }
+
   typedef std::shared_ptr<unit> unit_ptr;
 
   struct plugin_unit : public unit {
     plugin_ptr m_plugin;
-    plugin_unit (plugin_ptr plugin) :
-      unit (plugin->get_name (), plugin->m_port_properties),
+    std::vector<std::vector<float>> m_port_buffers;
+
+    plugin_unit (plugin_ptr plugin, const std::string &jack_client_name = "") :
+      unit (jack_client_name == "" ? ("horst:" + plugin->get_name ()) : jack_client_name, plugin->m_port_properties),
       m_plugin (plugin) {
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
@@ -184,6 +229,18 @@ namespace horst {
       }
 
       plugin->instantiate (jack_get_sample_rate (m_jack_client));
+    }
+
+    virtual int process_callback (jack_nframes_t nframes) override {
+      return 0;
+    }
+
+    virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
+      return 0;
+    }
+
+    virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
+      return 0;
     }
   };
 
@@ -253,10 +310,10 @@ namespace horst {
     }
     */
   
-    void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &name) {
+    void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name = "") {
       auto it = m_units.begin ();
       for (int index = 0; index < plugin_index; ++index) ++it; 
-      m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)))));
+      m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name)));
     }
   
     void insert_ladspa_plugin (int plugin_index, std::string library_file_name, std::string plugin_label) {
@@ -301,18 +358,5 @@ namespace horst {
     */
   }
 
-}
-
-namespace bp = boost::python;
-BOOST_PYTHON_MODULE(horst)
-{
-  bp::class_<horst::lilv_world>("lilv_world");
-  bp::class_<horst::horst_jack>("horst")
-    .def ("insert_ladspa_plugin", &horst::horst_jack::insert_ladspa_plugin)
-    .def ("insert_lv2_plugin", &horst::horst_jack::insert_lv2_plugin)
-    .def ("remove_plugin", &horst::horst_jack::remove_plugin)
-    .def ("set_plugin_parameter", &horst::horst_jack::set_plugin_parameter)
-    .def ("number_of_plugins", &horst::horst_jack::number_of_plugins)
-  ;
 }
 
