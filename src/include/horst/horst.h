@@ -70,12 +70,16 @@ namespace horst {
       m (lilv_plugin_instantiate (plugin.m, sample_rate, 0))
     {
       if (m == 0) throw std::runtime_error ("Failed to instantiate plugin");
+      lilv_instance_activate (m);
     }
 
     ~lilv_plugin_instance () {
+      lilv_instance_deactivate (m);
       lilv_instance_free (m);
     }
   };
+
+  typedef std::shared_ptr<lilv_plugin_instance> lilv_plugin_instance_ptr;
 
   struct port_properties {
     bool m_is_audio;
@@ -95,6 +99,8 @@ namespace horst {
     virtual void set_control_port_value (int port_index, float value) = 0;
     virtual const std::string &get_name () const = 0;
     virtual void instantiate (double sample_rate) = 0;
+    virtual void connect_port (size_t index, float *data) = 0;
+    virtual void run (size_t nframes) = 0;
 
     virtual ~plugin_base () {}
   };
@@ -109,16 +115,15 @@ namespace horst {
     const lilv_uri_node m_lilv_plugin_uri;
     const lilv_plugin m_lilv_plugin;
 
+    lilv_plugin_instance_ptr m_plugin_instance;
+
     const std::string m_uri;
     std::string m_name;
-
-    LilvInstance *m_lilv_instance;
 
     lv2_plugin (const lilv_world &world, const lilv_plugins &plugins, const std::string &uri) : 
       m_lilv_plugin_uri (world, uri),
       m_lilv_plugin (plugins, m_lilv_plugin_uri),
-      m_uri (uri),
-      m_lilv_instance (0)
+      m_uri (uri)
     {
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
@@ -142,29 +147,35 @@ namespace horst {
       if (name_node == 0) throw std::runtime_error ("Failed to get name of plugin. URI: " + m_uri);
       m_name = lilv_node_as_string (name_node);
       lilv_node_free (name_node);
+
+      LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin.m);
+      if (features != 0) throw std::runtime_error ("Unsupported feature");
     }
 
     virtual const std::string &get_name () const { return m_name; }
 
     virtual void instantiate (double sample_rate) {
-      if (m_lilv_instance != 0) {
-        lilv_instance_free (m_lilv_instance);
-      }
-
-      m_lilv_instance = lilv_plugin_instantiate (m_lilv_plugin.m, sample_rate, 0);
-      if (m_lilv_instance == 0) throw std::runtime_error ("Failed to instantiate plugin. URI: " + m_uri);
+      m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate));
     }
 
     virtual void set_control_port_value (int port_index, float value) {
 
     }
 
+    virtual void connect_port (size_t port_index, float *data) override {
+      lilv_instance_connect_port (m_plugin_instance->m, port_index, data);
+    }
+
+    virtual void run (size_t nframes) override {
+      lilv_instance_run (m_plugin_instance->m, nframes);
+    }
+
     virtual ~lv2_plugin () {
-      if (m_lilv_instance) {
-        lilv_instance_free (m_lilv_instance);
-      }
+
     }
   };
+
+  typedef std::shared_ptr<lv2_plugin> lv2_plugin_ptr;
 
   extern "C" {
     int unit_jack_process_callback (jack_nframes_t nframes, void *arg);    
@@ -173,35 +184,8 @@ namespace horst {
   }
 
   struct unit {
-    jack_client_t *m_jack_client;
-    std::vector<jack_port_t *> m_jack_ports;
-
-    unit (const std::string &jack_client_name, const std::vector<port_properties> &port_properties) {
-      m_jack_client = jack_client_open (jack_client_name.c_str(), JackUseExactName, 0);
-      if (m_jack_client == 0) throw std::runtime_error ("Failed to open jack client. Name: " + jack_client_name);
-    }
-
-    void set_callbacks () {
-      int ret;
-
-      ret = jack_set_sample_rate_callback (m_jack_client, unit_jack_sample_rate_callback, (void *)this);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to set sample rate callback");
-      }
-
-      ret = jack_set_process_callback (m_jack_client, unit_jack_process_callback, (void *)this);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to set buffer size callback");
-      }
-
-      ret = jack_set_buffer_size_callback (m_jack_client, unit_jack_buffer_size_callback, (void *)this);
-      if (ret != 0) {
-        throw std::runtime_error ("Failed to set buffer size callback");
-      }
-    }
-
     virtual ~unit () {
-      jack_client_close (m_jack_client);
+
     }
 
     virtual int process_callback (jack_nframes_t nframes) = 0;
@@ -226,13 +210,19 @@ namespace horst {
   typedef std::shared_ptr<unit> unit_ptr;
 
   struct plugin_unit : public unit {
-    plugin_ptr m_plugin;
+    jack_client_t *m_jack_client;
+    std::vector<jack_port_t *> m_jack_ports;
+
     std::vector<std::vector<float>> m_port_buffers;
+    plugin_ptr m_plugin;
 
     plugin_unit (plugin_ptr plugin, const std::string &jack_client_name = "") :
-      unit (jack_client_name == "" ? ("horst:" + plugin->get_name ()) : jack_client_name, plugin->m_port_properties),
+      m_port_buffers (plugin->m_port_properties.size (), std::vector<float> (32, 0.0f)),
       m_plugin (plugin) {
-      set_callbacks ();
+      std::string client_name = jack_client_name;
+      if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
+      m_jack_client = jack_client_open (client_name.c_str(), JackUseExactName, 0);
+      if (m_jack_client == 0) throw std::runtime_error ("Failed to open jack client. Name: " + jack_client_name);
 
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
@@ -249,18 +239,61 @@ namespace horst {
         }
       }
 
-      plugin->instantiate (jack_get_sample_rate (m_jack_client));
+      int ret;
+
+      ret = jack_set_sample_rate_callback (m_jack_client, unit_jack_sample_rate_callback, (void *)this);
+      if (ret != 0) {
+        throw std::runtime_error ("Failed to set sample rate callback");
+      }
+
+      ret = jack_set_process_callback (m_jack_client, unit_jack_process_callback, (void *)this);
+      if (ret != 0) {
+        throw std::runtime_error ("Failed to set buffer size callback");
+      }
+
+      ret = jack_set_buffer_size_callback (m_jack_client, unit_jack_buffer_size_callback, (void *)this);
+      if (ret != 0) {
+        throw std::runtime_error ("Failed to set buffer size callback");
+      }
+
+      ret = jack_activate (m_jack_client);
+      if (ret != 0) {
+        throw std::runtime_error ("Failed to activate client");
+      }
+    }
+
+    virtual ~plugin_unit () {
+      jack_deactivate (m_jack_client);
+      jack_client_close (m_jack_client);
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
+      m_plugin->run (nframes);
       return 0;
     }
 
+    void connect_ports () {
+      for (size_t index = 0; index < m_port_buffers.size (); ++index) {
+        port_properties &p = m_plugin->m_port_properties[index];
+        if (p.m_is_audio || p.m_is_control) {
+          m_plugin->connect_port (index, &m_port_buffers[index][0]);
+        }
+      }
+    }
+
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
+      // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
+      for (size_t index = 0; index < m_port_buffers.size (); ++index) {
+        m_port_buffers[index].resize (buffer_size, 0.0f);
+      }
+      connect_ports ();
       return 0;
     }
 
     virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
+      // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
+      m_plugin->instantiate ((double)sample_rate);
+      connect_ports ();
       return 0;
     }
   };
