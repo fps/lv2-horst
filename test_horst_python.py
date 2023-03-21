@@ -1,6 +1,10 @@
 import horst
 import time 
 
+uris2 = [
+  "http://calf.sourceforge.net/plugins/Gate",
+]
+
 uris = [
   "http://calf.sourceforge.net/plugins/Gate",
   "http://calf.sourceforge.net/plugins/Compressor",
@@ -34,9 +38,9 @@ h = horst.horst()
 index = 0
 for uri in uris:
   try:
-    h.insert_lv2_plugin(0, uri, str(index)+"_"+uri)
-  except:
-    print ("failed to insert plugin " + uri)
+    h.insert_lv2_plugin(0, uri, True, str(index)+"_"+uri)
+  except Exception as e:
+    print ("Failed to insert plugin " + uri + ": " + str(e))
     pass
   index = index + 1
 
