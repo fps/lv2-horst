@@ -110,6 +110,13 @@ namespace horst {
 
   typedef std::shared_ptr<plugin_base> plugin_ptr;
 
+  struct plugin_base_wrapper {
+    plugin_ptr m_plugin;
+    plugin_base_wrapper (plugin_ptr plugin) :
+      m_plugin (plugin) {
+    }
+  };
+
   struct ladspa_plugin : public plugin_base {
 
   };
@@ -194,6 +201,15 @@ namespace horst {
     }
   };
 
+  typedef std::shared_ptr<unit> unit_ptr;
+
+  struct unit_wrapper {
+    unit_ptr m_unit;
+    unit_wrapper (unit_ptr unit) :
+      m_unit (unit) {
+    }
+  };
+
   struct jack_unit : public unit
   {
     virtual int process_callback (jack_nframes_t nframes) = 0;
@@ -214,8 +230,6 @@ namespace horst {
       return ((jack_unit *)arg)->sample_rate_callback (sample_rate);
     }
   }
-
-  typedef std::shared_ptr<unit> unit_ptr;
 
   struct plugin_unit : public jack_unit {
     bool m_internal_client;
@@ -382,7 +396,19 @@ namespace horst {
     ~horst_jack () {
 
     }
+
+    plugin_base_wrapper make_lv2_plugin (const std::string &uri) {
+      return plugin_base_wrapper (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)));
+    }
   
+    void insert_plugin (int plugin_index, const std::string &jack_client_name) {
+
+    }
+
+    void insert_plugin_internal (int plugin_index, const std::string &jack_client_name) {
+
+    }
+
     void insert_lv2_plugin (int plugin_index, const std::string &uri, bool internal, const std::string &jack_client_name) {
       auto it = m_units.begin ();
       for (int index = 0; index < plugin_index; ++index) ++it; 
@@ -424,7 +450,6 @@ namespace horst {
       return 0;
     }
   };
-
 }
 
 
