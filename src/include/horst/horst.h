@@ -364,6 +364,22 @@ namespace horst {
     }
   }
 
+  struct connection {
+    const std::string m_from;
+    const std::string m_to;
+    connection (const std::string &from, const std::string &to) :
+      m_from (from), m_to (to) {
+
+    }
+  };
+
+  struct connections {
+    std::vector<connection> m;
+    void add (const connection &c) {
+      m.push_back (c);
+    }
+  };
+
   struct horst_jack {
     lilv_world m_lilv_world;
     lilv_plugins m_lilv_plugins;
@@ -453,6 +469,12 @@ namespace horst {
 
     int number_of_plugins () {
       return 0;
+    }
+
+    void connect (const connections& cs) {
+      for (size_t index = 0; index < cs.m.size(); ++index) {
+        jack_connect (m_jack_client->m, cs.m[index].m_from.c_str (), cs.m[index].m_to.c_str ());
+      }
     }
   };
 }
