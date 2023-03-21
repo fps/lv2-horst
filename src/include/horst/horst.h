@@ -111,9 +111,9 @@ namespace horst {
   typedef std::shared_ptr<plugin_base> plugin_ptr;
 
   struct plugin_base_wrapper {
-    plugin_ptr m_plugin;
-    plugin_base_wrapper (plugin_ptr plugin) :
-      m_plugin (plugin) {
+    plugin_ptr m;
+    plugin_base_wrapper (plugin_ptr plugin = plugin_ptr()) :
+      m (plugin) {
     }
   };
 
@@ -328,18 +328,33 @@ namespace horst {
     }
   };
 
+  struct jack_client {
+    jack_client_t *m;
+
+    jack_client (const std::string &client_name, jack_options_t options) :
+      m (jack_client_open (client_name.c_str (), options, 0)) {
+      if (m == 0) throw std::runtime_error ("horst: jack_client: Failed to open. Name: " + client_name);
+    }
+
+    ~jack_client () {
+      jack_client_close (m);
+    }
+  };  
+
+  typedef std::shared_ptr<jack_client> jack_client_ptr;
+
   struct internal_plugin_unit : public unit {
-    jack_client_t *m_jack_client;
+    jack_client_ptr m_jack_client;
     jack_intclient_t m_jack_intclient;
     
-    internal_plugin_unit (jack_client_t *jack_client, jack_intclient_t jack_intclient) :
+    internal_plugin_unit (jack_client_ptr jack_client, jack_intclient_t jack_intclient) :
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
 
     }
 
     ~internal_plugin_unit () {
-      jack_internal_client_unload (m_jack_client, m_jack_intclient);
+      jack_internal_client_unload (m_jack_client->m, m_jack_intclient);
     }
   };
 
@@ -355,7 +370,7 @@ namespace horst {
     std::list<unit_ptr> m_units;
     std::string m_horst_dli_fname;
     std::string m_jack_dli_fname;
-    jack_client_t *m_jack_client;
+    jack_client_ptr m_jack_client;
 
     horst_jack () :
       m_lilv_plugins (m_lilv_world) {
@@ -373,8 +388,7 @@ namespace horst {
         throw std::runtime_error ("horst: horst_jack: Failed to find jack dli_fname");
       }
 
-      m_jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
-      if (m_jack_client == 0) throw std::runtime_error ("Failed to open jack client: horst-loader");
+      m_jack_client = jack_client_ptr (new jack_client ("horst-loader", JackNullOption));
     }
 
     std::string get_internal_client_load_name (const std::string &dli_fname) {
@@ -397,41 +411,32 @@ namespace horst {
 
     }
 
-    plugin_base_wrapper make_lv2_plugin (const std::string &uri) {
-      return plugin_base_wrapper (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)));
-    }
-  
-    void insert_plugin (int plugin_index, const std::string &jack_client_name) {
-
-    }
-
-    void insert_plugin_internal (int plugin_index, const std::string &jack_client_name) {
-
-    }
-
-    void insert_lv2_plugin (int plugin_index, const std::string &uri, bool internal, const std::string &jack_client_name) {
+    void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name) {
       auto it = m_units.begin ();
       for (int index = 0; index < plugin_index; ++index) ++it; 
-      if (internal) {
-        jack_status_t jack_status;
-        jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
+      m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0)));
+    }
 
-        jack_intclient_t jack_intclient = jack_internal_client_load (
-          jack_client, jack_client_name.c_str (), 
-          (jack_options_t)(JackLoadInit | JackLoadName), &jack_status, 
-          get_internal_client_load_name (m_horst_dli_fname).c_str (), 
-          ("lv2 " + uri).c_str ());
+    void insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name) {
+      auto it = m_units.begin ();
+      for (int index = 0; index < plugin_index; ++index) ++it; 
 
-        if (jack_intclient == 0) {
-          std::cout << jack_status << "\n";
-          jack_client_close (jack_client);
-          throw std::runtime_error ("horst: horst_jack: Failed to create internal client. Name: " + jack_client_name);
-        }
-        jack_client_close (jack_client);
-        m_units.insert(it, unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient)));
-      } else {
-        m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0)));
+      jack_status_t jack_status;
+      // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
+
+      jack_intclient_t jack_intclient = jack_internal_client_load (
+        m_jack_client->m, jack_client_name.c_str (), 
+        (jack_options_t)(JackLoadInit | JackLoadName), &jack_status, 
+        get_internal_client_load_name (m_horst_dli_fname).c_str (), 
+        ("lv2 " + uri).c_str ());
+
+      if (jack_intclient == 0) {
+        std::cout << jack_status << "\n";
+        // jack_client_close (jack_client);
+        throw std::runtime_error ("horst: horst_jack: Failed to create internal client. Name: " + jack_client_name);
       }
+      // jack_client_close (jack_client);
+      m_units.insert(it, unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient)));
     }
   
     void insert_ladspa_plugin (int plugin_index, std::string library_file_name, std::string plugin_label) {
