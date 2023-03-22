@@ -15,8 +15,8 @@ for index in range(0,number_of_units):
   except Exception as e:
     print ("Failed to insert plugin " + uri + ": " + str(e))
 
+cs = horst.connections()
 for index in range(1,number_of_units):
-    subprocess.check_call (["jack_connect", str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l"])
+    cs.add(horst.connection(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l"))
 
-subprocess.check_call (["jack_connect", str(number_of_units-1)+"_"+uri+":"+"out_l", "system:playback_1"])
-subprocess.check_call (["jack_connect", str(0)+"_"+uri+":"+"in_l", "system:capture_1"])
+h.connect(cs)
