@@ -3,12 +3,6 @@
 #include <horst/plugin.h>
 #include <horst/jack.h>
 
-#include <jack/jack.h>
-#include <jack/intclient.h>
-
-#include <stdexcept>
-#include <memory>
-
 namespace horst {
   extern "C" {
     int unit_jack_process_callback (jack_nframes_t nframes, void *arg);

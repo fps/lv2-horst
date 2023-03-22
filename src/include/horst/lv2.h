@@ -1,7 +1,6 @@
 #pragma once
 
 #include <lilv/lilv.h>
-#include <memory>
 
 namespace horst {
 

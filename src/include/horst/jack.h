@@ -1,10 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <stdexcept>
-
-#include <jack/jack.h>
-
 namespace horst {
 
   struct jack_client {

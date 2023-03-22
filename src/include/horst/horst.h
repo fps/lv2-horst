@@ -4,12 +4,17 @@
 #include <list>
 #include <string>
 #include <functional>
-#include <horst/lart/junk.h>
-#include <horst/lart/ringbuffer.h>
-#include <horst/lart/heap.h>
-#include <horst/unit.h>
-#include <dlfcn.h>
+#include <memory>
+#include <stdexcept>
 #include <sstream>
+#include <iostream>
+
+#include <jack/jack.h>
+#include <jack/intclient.h>
+
+#include <horst/unit.h>
+
+#include <dlfcn.h>
 
 
 namespace horst {

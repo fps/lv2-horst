@@ -1,7 +1,6 @@
 #pragma once
 
 #include <horst/lv2.h>
-#include <memory>
 
 namespace horst {
 
