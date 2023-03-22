@@ -38,6 +38,7 @@ h = horst.horst()
 index = 0
 for uri in uris:
   try:
+    print("Adding: " + uri)
     h.insert_lv2_plugin(0, uri, str(index)+"_"+uri)
   except Exception as e:
     print ("Failed to insert plugin " + uri + ": " + str(e))

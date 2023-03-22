@@ -19,7 +19,6 @@ namespace horst {
   struct plugin_base {
     std::vector<port_properties> m_port_properties;
 
-    virtual void set_control_port_value (int port_index, float value) = 0;
     virtual const std::string &get_name () const = 0;
     virtual void instantiate (double sample_rate) = 0;
     virtual void connect_port (size_t index, float *data) = 0;
@@ -90,20 +89,12 @@ namespace horst {
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate));
     }
 
-    virtual void set_control_port_value (int port_index, float value) {
-
-    }
-
     virtual void connect_port (size_t port_index, float *data) override {
       lilv_instance_connect_port (m_plugin_instance->m, port_index, data);
     }
 
     virtual void run (size_t nframes) override {
       lilv_instance_run (m_plugin_instance->m, nframes);
-    }
-
-    virtual ~lv2_plugin () {
-
     }
   };
 

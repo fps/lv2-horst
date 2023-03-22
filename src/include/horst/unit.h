@@ -27,9 +27,16 @@ namespace horst {
 
   struct jack_unit : public unit
   {
+    bool m_expose_control_ports;
+
     virtual int process_callback (jack_nframes_t nframes) = 0;
     virtual int buffer_size_callback (jack_nframes_t buffer_size) = 0;
     virtual int sample_rate_callback (jack_nframes_t sample_rate) = 0;
+
+    jack_unit (bool expose_control_ports) :
+      m_expose_control_ports (expose_control_ports) {
+
+    }
   };
 
   extern "C" {
@@ -46,15 +53,20 @@ namespace horst {
     }
   }
 
+  typedef std::pair<std::vector<float>&, std::pair<std::vector<float>, std::vector<float>>> port_double_buffer;
+
   struct plugin_unit : public jack_unit {
     bool m_internal_client;
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
 
+    std::vector<port_double_buffer> m_port_double_buffers;
+
     std::vector<std::vector<float>> m_port_buffers;
     plugin_ptr m_plugin;
 
-    plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, jack_client_t *jack_client) :
+    plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, jack_client_t *jack_client, bool expose_control_ports) :
+      jack_unit (expose_control_ports),
       m_internal_client (jack_client != 0),
       m_jack_client (jack_client),
       m_port_buffers (plugin->m_port_properties.size (), std::vector<float> (32, 0.0f)),
@@ -68,7 +80,7 @@ namespace horst {
 
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
-        if (p.m_is_audio) {
+        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
           if (p.m_is_input) {
             jack_port_t *port = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
             if (port == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
@@ -113,6 +125,14 @@ namespace horst {
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
+      size_t jack_port_index = 0;
+      for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
+        const port_properties &p = m_plugin->m_port_properties[index];
+        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
+          m_plugin->connect_port (index, (float*)jack_port_get_buffer (m_jack_ports[jack_port_index], nframes));
+          ++jack_port_index;
+        }
+      }
       m_plugin->run (nframes);
       return 0;
     }

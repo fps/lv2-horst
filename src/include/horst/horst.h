@@ -92,24 +92,27 @@ namespace horst {
 
     }
 
-    void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name) {
+    void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       auto it = m_units.begin ();
       for (int index = 0; index < plugin_index; ++index) ++it; 
-      m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0)));
+      m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports)));
     }
 
-    void insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name) {
+    void insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       auto it = m_units.begin ();
       for (int index = 0; index < plugin_index; ++index) ++it; 
 
       jack_status_t jack_status;
       // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
 
+      std::stringstream init_stream;
+      init_stream << "lv2 " << uri << " " << expose_control_ports;
+
       jack_intclient_t jack_intclient = jack_internal_client_load (
         m_jack_client->m, jack_client_name.c_str (), 
         (jack_options_t)(JackLoadInit | JackLoadName), &jack_status, 
         get_internal_client_load_name (m_horst_dli_fname).c_str (), 
-        ("lv2 " + uri).c_str ());
+        init_stream.str ().c_str ());
 
       if (jack_intclient == 0) {
         std::cout << jack_status << "\n";
@@ -125,7 +128,7 @@ namespace horst {
     }
   
     void set_plugin_parameter (int plugin_index, int port_index, float value) {
-  
+        
     }
 
     void remove_plugin (int plugin_index) {
