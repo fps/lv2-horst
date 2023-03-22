@@ -26,7 +26,7 @@ extern "C" {
     stream >> uri;
 
     try {
-      plugin_unit *unit =  new plugin_unit (plugin_ptr (new lv2_plugin (the_horst->m_lilv_world, the_horst->m_lilv_plugins, uri)), "", jack_client);
+      new plugin_unit (plugin_ptr (new lv2_plugin (the_horst->m_lilv_world, the_horst->m_lilv_plugins, uri)), "", jack_client);
     } catch (std::runtime_error &e) {
       std::cout << "horst: Failed to load plugin: " << e.what () << "\n";
       return 1;

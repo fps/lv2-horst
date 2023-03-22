@@ -17,6 +17,6 @@ for index in range(0,number_of_units):
 
 cs = horst.connections()
 for index in range(1,number_of_units):
-    cs.add(horst.connection(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l"))
+    cs.add(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l")
 
 h.connect(cs)

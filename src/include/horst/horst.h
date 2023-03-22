@@ -39,6 +39,10 @@ namespace horst {
     void add (const connection &c) {
       m.push_back (c);
     }
+
+    void add (const std::string &from, const std::string &to) {
+      m.push_back (connection (from, to));
+    }
   };
 
   struct horst_jack {
