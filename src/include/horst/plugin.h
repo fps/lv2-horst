@@ -69,6 +69,18 @@ namespace horst {
         p.m_is_control = lilv_port_is_a (m_lilv_plugin.m, lilv_port, control.m);
         p.m_is_input = lilv_port_is_a (m_lilv_plugin.m, lilv_port, input.m);
         p.m_is_output = lilv_port_is_a (m_lilv_plugin.m, lilv_port, output.m);
+
+        if (p.m_is_input && p.m_is_control) {
+          LilvNode *def;
+          LilvNode *min;
+          LilvNode *max;
+
+          lilv_port_get_range (m_lilv_plugin.m, lilv_port, &def, &min, &max);
+
+          p.m_minimum_value = lilv_node_as_float (min);
+          p.m_default_value = lilv_node_as_float (def);
+          p.m_maximum_value = lilv_node_as_float (max);
+        }
       }
 
       lilv_uri_node doap_name (world, "http://usefulinc.com/ns/doap#name");

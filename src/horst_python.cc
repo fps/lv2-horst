@@ -19,6 +19,7 @@ BOOST_PYTHON_MODULE(horst)
     .def ("insert_lv2_plugin_internal", &horst::horst_jack::insert_lv2_plugin)
     .def ("remove_plugin", &horst::horst_jack::remove_plugin)
     .def ("set_control_port_value", &horst::horst_jack::set_control_port_value)
+    .def ("get_control_port_value", &horst::horst_jack::get_control_port_value)
     .def ("number_of_plugins", &horst::horst_jack::number_of_plugins)
     .def ("connect", &horst::horst_jack::connect)
   ;

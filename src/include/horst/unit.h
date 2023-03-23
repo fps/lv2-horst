@@ -16,6 +16,7 @@ namespace horst {
     }
 
     virtual void set_control_port_value (size_t index, float value) = 0;
+    virtual float get_control_port_value (size_t index) = 0;
   };
 
   typedef std::shared_ptr<unit> unit_ptr;
@@ -134,7 +135,11 @@ namespace horst {
           m_plugin->connect_port (index, (float*)jack_port_get_buffer (m_jack_ports[index], nframes));
         }
         if (p.m_is_control && !m_expose_control_ports) {
-          m_port_values[index] = m_atomic_port_values[index];
+          if (p.m_is_input) {
+            m_port_values[index] = m_atomic_port_values[index];
+          } else {
+            m_atomic_port_values[index] = m_port_values[index];
+          }
           m_plugin->connect_port (index, &m_port_values[index]);
         }
       }
@@ -153,11 +158,18 @@ namespace horst {
       return 0;
     }
 
-    void set_control_port_value (size_t index, float value) {
+    void set_control_port_value (size_t index, float value) override {
       if (index >= m_port_values.size ()) {
         throw std::runtime_error ("horst: plugin_unit: index out of bounds");
       }
       m_atomic_port_values [index] = value;
+    }
+
+    float get_control_port_value (size_t index) override {
+      if (index >= m_port_values.size ()) {
+        throw std::runtime_error ("horst: plugin_unit: index out of bounds");
+      }
+      return m_atomic_port_values [index];
     }
   };
 
@@ -171,7 +183,11 @@ namespace horst {
 
     }
 
-    void set_control_port_value (size_t index, float value) {
+    void set_control_port_value (size_t index, float value) override {
+      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
+    }
+
+    float get_control_port_value (size_t index) override {
       throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
     }
 

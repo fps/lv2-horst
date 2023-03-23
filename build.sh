@@ -1,1 +1,1 @@
-make $* 2>&1 | less -F
+make $* -j 2>&1 | less -F

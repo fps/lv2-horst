@@ -7,10 +7,11 @@ h = horst.horst()
 
 cs = horst.connections()
 
-uri = "http://calf.sourceforge.net/plugins/Gate"
+uri = "http://calf.sourceforge.net/plugins/Reverb"
 
 number_of_units = 5
 index = 0
+cs.add("system:capture_1", str(index)+"_"+uri+":"+"in_l")
 for plugin_index in range(0,number_of_units):
   try:
     h.insert_lv2_plugin(0, uri, str(index)+"_"+uri, False)
@@ -19,6 +20,7 @@ for plugin_index in range(0,number_of_units):
   except Exception as e:
     print ("Failed to insert plugin " + uri + ": " + str(e))
   index += 1
+cs.add(str(index-1)+"_"+uri+":"+"out_l", "system:playback_1")
 
 for plugin_index in range(0,number_of_units):
   try:

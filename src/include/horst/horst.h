@@ -132,9 +132,20 @@ namespace horst {
       if (plugin_index >= (int)m_units.size()) {
         throw std::runtime_error ("horst: horst_jack: index out of bounds");
       }
+
       auto it = m_units.begin ();
       for (int index = 0; index < plugin_index; ++index) ++it; 
       (*it)->set_control_port_value (port_index, value); 
+    }
+
+    float get_control_port_value (int plugin_index, int port_index) {
+      if (plugin_index >= (int)m_units.size()) {
+        throw std::runtime_error ("horst: horst_jack: index out of bounds");
+      }
+
+      auto it = m_units.begin ();
+      for (int index = 0; index < plugin_index; ++index) ++it; 
+      return (*it)->get_control_port_value (port_index); 
     }
 
     void remove_plugin (int plugin_index) {
