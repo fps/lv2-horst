@@ -5,7 +5,7 @@ h = horst.horst()
 
 uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 
-p = h.insert_lv2_plugin(0, uri, "reverb", False)
+p = h.lv2_unit(uri, "reverb", False)
 
 h.set_control_port_value(p, 18, 0.9)
 h.set_control_port_value(p, 19, 1)

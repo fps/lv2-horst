@@ -110,11 +110,11 @@ namespace horst {
 
     }
 
-    unit_wrapper insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+    unit_wrapper create_lv2_unit (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       return unit_wrapper (unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports)));
     }
 
-    unit_wrapper insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+    unit_wrapper create_lv2_internal_unit (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       jack_status_t jack_status;
       // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
 
