@@ -7,9 +7,9 @@ uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 
 p = h.lv2_unit(uri, "reverb", False)
 
-h.set_control_port_value(p, 18, 0.9)
-h.set_control_port_value(p, 19, 1)
-h.set_control_port_value(p, 21, 2)
+h.set_control_port_value(p, "feedback", 0.9)
+h.set_control_port_value(p, "amount", 1)
+h.set_control_port_value(p, "medium", 2)
 
 cs = horst.connections()
 cs.add("system:capture_1", "reverb:in_l")

@@ -144,16 +144,16 @@ namespace horst {
       wrapper.m_unit->set_control_port_value (port_index, value); 
     }
 
+    void set_control_port_value (unit_wrapper wrapper, const std::string &port_name, float value) {
+      wrapper.m_unit->set_control_port_value (port_name, value); 
+    }
+
     float get_control_port_value (unit_wrapper wrapper, int port_index) {
       return wrapper.m_unit->get_control_port_value (port_index); 
     }
 
-    void remove_plugin (int plugin_index) {
-  
-    }
-
-    int number_of_plugins () {
-      return 0;
+    float get_control_port_value (unit_wrapper wrapper, const std::string &port_name) {
+      return wrapper.m_unit->get_control_port_value (port_name); 
     }
 
     void connect (const connections& cs) {

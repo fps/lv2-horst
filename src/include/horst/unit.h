@@ -16,7 +16,9 @@ namespace horst {
     }
 
     virtual void set_control_port_value (size_t index, float value) = 0;
+    virtual void set_control_port_value (const std::string &name, float value) = 0;
     virtual float get_control_port_value (size_t index) = 0;
+    virtual float get_control_port_value (const std::string &name) = 0;
   };
 
   typedef std::shared_ptr<unit> unit_ptr;
@@ -60,6 +62,7 @@ namespace horst {
     bool m_internal_client;
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
+    jack_port_t *m_jack_midi_port;
 
     std::vector<std::atomic<float>> m_atomic_port_values;
     std::vector<float> m_port_values;
@@ -80,6 +83,9 @@ namespace horst {
         m_jack_client = jack_client_open (client_name.c_str(), JackUseExactName, 0);
       }
       if (m_jack_client == 0) throw std::runtime_error ("horst: plugin_unit: Failed to open jack client. Name: " + jack_client_name);
+
+      m_jack_midi_port = jack_port_register (m_jack_client, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+      if (m_jack_midi_port == 0) throw std::runtime_error ("horst: plugin_unit: Failed to register midi port: " + m_plugin->get_name () + ":midi-in");
 
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
@@ -158,6 +164,14 @@ namespace horst {
       return 0;
     }
 
+    void set_control_port_value (const std::string &name, float value) override {
+      set_control_port_value (m_plugin->find_port (name), value);
+    }
+
+    float get_control_port_value (const std::string &name) override {
+      return get_control_port_value (m_plugin->find_port (name));
+    }
+
     void set_control_port_value (size_t index, float value) override {
       if (index >= m_port_values.size ()) {
         throw std::runtime_error ("horst: plugin_unit: index out of bounds");
@@ -181,6 +195,14 @@ namespace horst {
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
 
+    }
+
+    void set_control_port_value (const std::string &name, float value) override {
+      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
+    }
+
+    float get_control_port_value (const std::string &name) override {
+      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
     }
 
     void set_control_port_value (size_t index, float value) override {
