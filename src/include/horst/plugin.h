@@ -41,8 +41,8 @@ namespace horst {
   };
 
   struct lv2_plugin : public plugin_base {
-    const lilv_uri_node_ptr m_lilv_plugin_uri;
-    const lilv_plugin_ptr m_lilv_plugin;
+    lilv_uri_node_ptr m_lilv_plugin_uri;
+    lilv_plugin_ptr m_lilv_plugin;
 
     lilv_plugin_instance_ptr m_plugin_instance;
 
@@ -80,6 +80,10 @@ namespace horst {
           p.m_minimum_value = lilv_node_as_float (min);
           p.m_default_value = lilv_node_as_float (def);
           p.m_maximum_value = lilv_node_as_float (max);
+
+          lilv_node_free (def);
+          lilv_node_free (min);
+          lilv_node_free (max);
         }
       }
 

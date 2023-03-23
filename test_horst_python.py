@@ -27,7 +27,7 @@ uris = [
   "http://fps.io/plugins/state-variable-filter-v2",
   "http://fps.io/plugins/clipping.tanh",
   "http://fps.io/plugins/relative_dynamics",
-  "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
+  # "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
   "http://calf.sourceforge.net/plugins/HaasEnhancer",
   "http://calf.sourceforge.net/plugins/Reverb",
   "http://plugin.org.uk/swh-plugins/amp"
@@ -35,11 +35,13 @@ uris = [
 
 h = horst.horst()
 
+units = []
+
 index = 0
 for uri in uris:
   try:
     print("Adding: " + uri)
-    h.insert_lv2_plugin(0, uri, str(index)+"_"+uri)
+    units.append(h.lv2_unit(uri, str(index)+"_"+uri, False))
   except Exception as e:
     print ("Failed to insert plugin " + uri + ": " + str(e))
     pass

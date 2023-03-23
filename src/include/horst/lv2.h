@@ -34,13 +34,13 @@ namespace horst {
 
   struct lilv_uri_node {
     const std::string m_uri;
-    LilvNode *m;
     lilv_world_ptr m_world;
+    LilvNode *m;
 
     lilv_uri_node (lilv_world_ptr world, const std::string &uri) :
       m_uri (uri),
-      m (lilv_new_uri (world->m, uri.c_str ())),
-      m_world (world) {
+      m_world (world),
+      m (lilv_new_uri (world->m, uri.c_str ())) {
       if (m == 0) throw std::runtime_error ("horst: lilv_uri_node: Failed to create lilv uri node. URI: " + uri);
     }
 
@@ -56,10 +56,11 @@ namespace horst {
     lilv_uri_node_ptr m_uri_node;
     lilv_plugins_ptr m_lilv_plugins;
 
-    lilv_plugin (lilv_plugins_ptr plugins, const lilv_uri_node_ptr &node) :
+    lilv_plugin (lilv_plugins_ptr plugins, lilv_uri_node_ptr node) :
       m (lilv_plugins_get_by_uri (plugins->m, node->m)),
       m_uri_node (node),
       m_lilv_plugins (plugins) {
+      if (m == 0) throw std::runtime_error ("horst: lilv_plugin: Plugin not found. URI: " + m_uri_node->m_uri);
     }
   };
 
