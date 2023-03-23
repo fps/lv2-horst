@@ -26,6 +26,21 @@ namespace horst {
     }
   }
 
+  struct midi_binding {
+    int m_cc;
+    int m_channel;
+    float m_factor;
+    float m_offset;
+
+    midi_binding (const int cc, const int channel = 0, const float factor = 1.0, const float offset = 0.0) :
+      m_cc (cc),
+      m_channel (channel),
+      m_factor (factor),
+      m_offset (offset) {
+
+    }
+  };
+
   struct connection {
     const std::string m_from;
     const std::string m_to;
