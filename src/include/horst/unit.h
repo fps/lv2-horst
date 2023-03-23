@@ -14,6 +14,8 @@ namespace horst {
     virtual ~unit () {
 
     }
+
+    virtual void set_control_port_value (size_t index, float value) = 0;
   };
 
   typedef std::shared_ptr<unit> unit_ptr;
@@ -53,23 +55,22 @@ namespace horst {
     }
   }
 
-  typedef std::pair<std::vector<float>&, std::pair<std::vector<float>, std::vector<float>>> port_double_buffer;
-
   struct plugin_unit : public jack_unit {
     bool m_internal_client;
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
 
-    std::vector<port_double_buffer> m_port_double_buffers;
+    std::vector<std::atomic<float>> m_atomic_port_values;
+    std::vector<float> m_port_values;
 
-    std::vector<std::vector<float>> m_port_buffers;
     plugin_ptr m_plugin;
 
     plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, jack_client_t *jack_client, bool expose_control_ports) :
       jack_unit (expose_control_ports),
       m_internal_client (jack_client != 0),
       m_jack_client (jack_client),
-      m_port_buffers (plugin->m_port_properties.size (), std::vector<float> (32, 0.0f)),
+      m_atomic_port_values (plugin->m_port_properties.size ()),
+      m_port_values (plugin->m_port_properties.size ()),
       m_plugin (plugin) {
       std::string client_name = jack_client_name;
       if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
@@ -80,6 +81,9 @@ namespace horst {
 
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
+        if (p.m_is_control && p.m_is_input) {
+          m_atomic_port_values[index] = p.m_default_value;
+        }
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
           if (p.m_is_input) {
             jack_port_t *port = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
@@ -132,34 +136,31 @@ namespace horst {
           m_plugin->connect_port (index, (float*)jack_port_get_buffer (m_jack_ports[jack_port_index], nframes));
           ++jack_port_index;
         }
+        if (p.m_is_control && !m_expose_control_ports) {
+          m_port_values[index] = m_atomic_port_values[index];
+          m_plugin->connect_port (index, &m_port_values[index]);
+        }
       }
       m_plugin->run (nframes);
       return 0;
     }
 
-    void connect_ports () {
-      for (size_t index = 0; index < m_port_buffers.size (); ++index) {
-        port_properties &p = m_plugin->m_port_properties[index];
-        if (p.m_is_audio || p.m_is_control) {
-          m_plugin->connect_port (index, &m_port_buffers[index][0]);
-        }
-      }
-    }
-
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
       // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
-      for (size_t index = 0; index < m_port_buffers.size (); ++index) {
-        m_port_buffers[index].resize (buffer_size, 0.0f);
-      }
-      connect_ports ();
       return 0;
     }
 
     virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
       // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
       m_plugin->instantiate ((double)sample_rate);
-      connect_ports ();
       return 0;
+    }
+
+    void set_control_port_value (size_t index, float value) {
+      if (index >= m_port_values.size ()) {
+        throw std::runtime_error ("horst: plugin_unit: index out of bounds");
+      }
+      m_atomic_port_values [index] = value;
     }
   };
 
@@ -171,6 +172,10 @@ namespace horst {
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
 
+    }
+
+    void set_control_port_value (size_t index, float value) {
+      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
     }
 
     ~internal_plugin_unit () {
