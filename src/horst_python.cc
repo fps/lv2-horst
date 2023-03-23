@@ -4,6 +4,8 @@
 namespace bp = boost::python;
 BOOST_PYTHON_MODULE(horst)
 {
+  bp::class_<horst::uid>("uid");
+
   bp::class_<horst::connection>("connection", 
     bp::init<const std::string&, const std::string&> ())
   ;

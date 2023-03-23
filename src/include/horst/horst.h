@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <list>
+#include <map>
 #include <string>
 #include <functional>
 #include <memory>
@@ -16,6 +17,7 @@
 #include <horst/unit.h>
 
 #include <dlfcn.h>
+#include <time.h>
 
 
 namespace horst {
@@ -24,6 +26,18 @@ namespace horst {
     void dli_fname_test () {
 
     }
+  }
+
+  struct uid {
+    timespec m_ts;
+
+    bool operator<(const uid& other) {
+      return other.m_ts.tv_sec < m_ts.tv_sec && other.m_ts.tv_nsec < m_ts.tv_nsec;
+    }
+  };
+
+  bool operator<(const uid& one, const uid &other) {
+      return other.m_ts.tv_sec < one.m_ts.tv_sec && other.m_ts.tv_nsec < one.m_ts.tv_nsec;
   }
 
   struct midi_binding {
@@ -64,7 +78,7 @@ namespace horst {
   struct horst_jack {
     lilv_world m_lilv_world;
     lilv_plugins m_lilv_plugins;
-    std::list<unit_ptr> m_units;
+    std::map<uid, unit_ptr> m_units;
     std::string m_horst_dli_fname;
     std::string m_jack_dli_fname;
     jack_client_ptr m_jack_client;
@@ -108,15 +122,16 @@ namespace horst {
 
     }
 
-    void insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
-      auto it = m_units.begin ();
-      for (int index = 0; index < plugin_index; ++index) ++it; 
-      m_units.insert(it, unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports)));
+    uid insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+      uid id;
+      clock_gettime(CLOCK_MONOTONIC, &id.m_ts);
+      m_units[id] = unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports));
+      return id;
     }
 
-    void insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
-      auto it = m_units.begin ();
-      for (int index = 0; index < plugin_index; ++index) ++it; 
+    uid insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+      uid id;
+      clock_gettime(CLOCK_MONOTONIC, &id.m_ts);
 
       jack_status_t jack_status;
       // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
@@ -136,31 +151,28 @@ namespace horst {
         throw std::runtime_error ("horst: horst_jack: Failed to create internal client. Name: " + jack_client_name);
       }
       // jack_client_close (jack_client);
-      m_units.insert(it, unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient)));
+      m_units[id] = unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient));
+      return id;
     }
   
     void insert_ladspa_plugin (int plugin_index, std::string library_file_name, std::string plugin_label) {
   
     }
   
-    void set_control_port_value (int plugin_index, int port_index, float value) {
-      if (plugin_index >= (int)m_units.size()) {
+    void set_control_port_value (const uid &id, int port_index, float value) {
+      if (m_units.find (id) == m_units.end ()) {
         throw std::runtime_error ("horst: horst_jack: index out of bounds");
       }
 
-      auto it = m_units.begin ();
-      for (int index = 0; index < plugin_index; ++index) ++it; 
-      (*it)->set_control_port_value (port_index, value); 
+      m_units[id]->set_control_port_value (port_index, value); 
     }
 
-    float get_control_port_value (int plugin_index, int port_index) {
-      if (plugin_index >= (int)m_units.size()) {
+    float get_control_port_value (const uid &id, int port_index) {
+      if (m_units.find (id) == m_units.end ()) {
         throw std::runtime_error ("horst: horst_jack: index out of bounds");
       }
 
-      auto it = m_units.begin ();
-      for (int index = 0; index < plugin_index; ++index) ++it; 
-      return (*it)->get_control_port_value (port_index); 
+      return m_units[id]->get_control_port_value (port_index); 
     }
 
     void remove_plugin (int plugin_index) {
