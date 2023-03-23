@@ -69,6 +69,7 @@ namespace horst {
       jack_unit (expose_control_ports),
       m_internal_client (jack_client != 0),
       m_jack_client (jack_client),
+      m_jack_ports (plugin->m_port_properties.size ()),
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_plugin (plugin) {
@@ -86,13 +87,11 @@ namespace horst {
         }
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
           if (p.m_is_input) {
-            jack_port_t *port = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
-            if (port == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
-            m_jack_ports.push_back(port);
+            m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
           } else {
-            jack_port_t *port = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
-            if (port == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
-            m_jack_ports.push_back(port);
+            m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
           }
         }
       }
@@ -129,12 +128,10 @@ namespace horst {
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
-      size_t jack_port_index = 0;
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
         const port_properties &p = m_plugin->m_port_properties[index];
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
-          m_plugin->connect_port (index, (float*)jack_port_get_buffer (m_jack_ports[jack_port_index], nframes));
-          ++jack_port_index;
+          m_plugin->connect_port (index, (float*)jack_port_get_buffer (m_jack_ports[index], nframes));
         }
         if (p.m_is_control && !m_expose_control_ports) {
           m_port_values[index] = m_atomic_port_values[index];
