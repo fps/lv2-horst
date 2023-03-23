@@ -41,17 +41,17 @@ namespace horst {
   };
 
   struct lv2_plugin : public plugin_base {
-    const lilv_uri_node m_lilv_plugin_uri;
-    const lilv_plugin m_lilv_plugin;
+    const lilv_uri_node_ptr m_lilv_plugin_uri;
+    const lilv_plugin_ptr m_lilv_plugin;
 
     lilv_plugin_instance_ptr m_plugin_instance;
 
     const std::string m_uri;
     std::string m_name;
 
-    lv2_plugin (const lilv_world &world, const lilv_plugins &plugins, const std::string &uri) :
-      m_lilv_plugin_uri (world, uri),
-      m_lilv_plugin (plugins, m_lilv_plugin_uri),
+    lv2_plugin (lilv_world_ptr world, lilv_plugins_ptr plugins, const std::string &uri) :
+      m_lilv_plugin_uri (new lilv_uri_node (world, uri)),
+      m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
       m_uri (uri)
     {
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
@@ -59,23 +59,23 @@ namespace horst {
       lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
       lilv_uri_node control (world, LILV_URI_CONTROL_PORT);
 
-      m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin.m));
+      m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));
       for (size_t index = 0; index < m_port_properties.size(); ++index) {
-        const LilvPort *lilv_port = lilv_plugin_get_port_by_index (m_lilv_plugin.m, index);
+        const LilvPort *lilv_port = lilv_plugin_get_port_by_index (m_lilv_plugin->m, index);
         port_properties &p = m_port_properties[index];
-        p.m_name = lilv_node_as_string (lilv_port_get_symbol (m_lilv_plugin.m, lilv_port));
+        p.m_name = lilv_node_as_string (lilv_port_get_symbol (m_lilv_plugin->m, lilv_port));
 
-        p.m_is_audio = lilv_port_is_a (m_lilv_plugin.m, lilv_port, audio.m);
-        p.m_is_control = lilv_port_is_a (m_lilv_plugin.m, lilv_port, control.m);
-        p.m_is_input = lilv_port_is_a (m_lilv_plugin.m, lilv_port, input.m);
-        p.m_is_output = lilv_port_is_a (m_lilv_plugin.m, lilv_port, output.m);
+        p.m_is_audio = lilv_port_is_a (m_lilv_plugin->m, lilv_port, audio.m);
+        p.m_is_control = lilv_port_is_a (m_lilv_plugin->m, lilv_port, control.m);
+        p.m_is_input = lilv_port_is_a (m_lilv_plugin->m, lilv_port, input.m);
+        p.m_is_output = lilv_port_is_a (m_lilv_plugin->m, lilv_port, output.m);
 
         if (p.m_is_input && p.m_is_control) {
           LilvNode *def;
           LilvNode *min;
           LilvNode *max;
 
-          lilv_port_get_range (m_lilv_plugin.m, lilv_port, &def, &min, &max);
+          lilv_port_get_range (m_lilv_plugin->m, lilv_port, &def, &min, &max);
 
           p.m_minimum_value = lilv_node_as_float (min);
           p.m_default_value = lilv_node_as_float (def);
@@ -84,12 +84,12 @@ namespace horst {
       }
 
       lilv_uri_node doap_name (world, "http://usefulinc.com/ns/doap#name");
-      LilvNode *name_node = lilv_world_get (world.m, m_lilv_plugin_uri.m, doap_name.m, 0);
+      LilvNode *name_node = lilv_world_get (world->m, m_lilv_plugin_uri->m, doap_name.m, 0);
       if (name_node == 0) throw std::runtime_error ("horst: lv2_plugin: Failed to get name of plugin. URI: " + m_uri);
       m_name = lilv_node_as_string (name_node);
       lilv_node_free (name_node);
 
-      LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin.m);
+      LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
       if (features != 0) {
         throw std::runtime_error (std::string ("horst: lv2_plugin: Unsupported feature: "));
       }

@@ -28,18 +28,6 @@ namespace horst {
     }
   }
 
-  struct uid {
-    timespec m_ts;
-
-    bool operator<(const uid& other) {
-      return other.m_ts.tv_sec < m_ts.tv_sec && other.m_ts.tv_nsec < m_ts.tv_nsec;
-    }
-  };
-
-  bool operator<(const uid& one, const uid &other) {
-      return other.m_ts.tv_sec < one.m_ts.tv_sec && other.m_ts.tv_nsec < one.m_ts.tv_nsec;
-  }
-
   struct midi_binding {
     int m_cc;
     int m_channel;
@@ -76,15 +64,15 @@ namespace horst {
   };
 
   struct horst_jack {
-    lilv_world m_lilv_world;
-    lilv_plugins m_lilv_plugins;
-    std::map<uid, unit_ptr> m_units;
+    lilv_world_ptr m_lilv_world;
+    lilv_plugins_ptr m_lilv_plugins;
     std::string m_horst_dli_fname;
     std::string m_jack_dli_fname;
     jack_client_ptr m_jack_client;
 
     horst_jack () :
-      m_lilv_plugins (m_lilv_world) {
+      m_lilv_world (new lilv_world),
+      m_lilv_plugins (new lilv_plugins (m_lilv_world)) {
       Dl_info dl_info;
       if (dladdr ((const void*)dli_fname_test, &dl_info)) {
         m_horst_dli_fname = dl_info.dli_fname;
@@ -122,17 +110,11 @@ namespace horst {
 
     }
 
-    uid insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
-      uid id;
-      clock_gettime(CLOCK_MONOTONIC, &id.m_ts);
-      m_units[id] = unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports));
-      return id;
+    unit_wrapper insert_lv2_plugin (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+      return unit_wrapper (unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports)));
     }
 
-    uid insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
-      uid id;
-      clock_gettime(CLOCK_MONOTONIC, &id.m_ts);
-
+    unit_wrapper insert_lv2_plugin_internal (int plugin_index, const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       jack_status_t jack_status;
       // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
 
@@ -151,28 +133,19 @@ namespace horst {
         throw std::runtime_error ("horst: horst_jack: Failed to create internal client. Name: " + jack_client_name);
       }
       // jack_client_close (jack_client);
-      m_units[id] = unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient));
-      return id;
+      return unit_wrapper (unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient)));
     }
   
     void insert_ladspa_plugin (int plugin_index, std::string library_file_name, std::string plugin_label) {
   
     }
   
-    void set_control_port_value (const uid &id, int port_index, float value) {
-      if (m_units.find (id) == m_units.end ()) {
-        throw std::runtime_error ("horst: horst_jack: index out of bounds");
-      }
-
-      m_units[id]->set_control_port_value (port_index, value); 
+    void set_control_port_value (unit_wrapper wrapper, int port_index, float value) {
+      wrapper.m_unit->set_control_port_value (port_index, value); 
     }
 
-    float get_control_port_value (const uid &id, int port_index) {
-      if (m_units.find (id) == m_units.end ()) {
-        throw std::runtime_error ("horst: horst_jack: index out of bounds");
-      }
-
-      return m_units[id]->get_control_port_value (port_index); 
+    float get_control_port_value (unit_wrapper wrapper, int port_index) {
+      return wrapper.m_unit->get_control_port_value (port_index); 
     }
 
     void remove_plugin (int plugin_index) {
