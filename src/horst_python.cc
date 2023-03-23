@@ -4,7 +4,9 @@
 namespace bp = boost::python;
 BOOST_PYTHON_MODULE(horst)
 {
-  bp::class_<horst::connection>("connection", bp::init<const std::string&, const std::string&> ());
+  bp::class_<horst::connection>("connection", 
+    bp::init<const std::string&, const std::string&> ())
+  ;
 
   void (horst::connections::*add1)(const std::string &, const std::string &) = &horst::connections::add;
   void (horst::connections::*add2)(const horst::connection &) = &horst::connections::add;
@@ -13,7 +15,9 @@ BOOST_PYTHON_MODULE(horst)
     .def ("add", add2)
   ;
 
-  bp::class_<horst::midi_binding>("midi_binding", bp::init<int, bp::optional<int, float, float>> ());
+  bp::class_<horst::midi_binding>("midi_binding", 
+    bp::init<int, bp::optional<int, float, float>> ())
+  ;
 
   bp::class_<horst::horst_jack>("horst")
     .def ("insert_ladspa_plugin", &horst::horst_jack::insert_ladspa_plugin)
