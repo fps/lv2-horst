@@ -2,16 +2,24 @@ import horst
 
 h = horst.horst()
 
+class ports:
+    def __init__(self):
+        self.props = []
+    def __getitem__(self, index):
+        return self.props[index]
+
 class lv2:
     def __init__(self, uri, jack_client_name, expose_control_ports):
         self.unit = h.lv2_unit (uri, jack_client_name, expose_control_ports)
+        self.jack_client_name = jack_client_name
         self.port_indices = {}
         self.port_properties = {}
+        self.ports = ports()
         for index in range (h.get_number_of_ports (self.unit)):
             props = h.get_port_properties (self.unit, index)
+            props.index = index
+            props.jack_name = self.jack_client_name + ":" + props.name
+            setattr(props, 'value', property (lambda v: h.set_control_port_value(self.unit, index, v), lambda: h.get_control_port_value(self.unit, index)))
+            setattr(self.ports, props.name+'_', props)
             self.port_properties[index] = props
-            self.port_properties[props.name] = props
-            self.port_indices[props.name] = index
-
-    def set_control_port_value (self, index, value):
-        h.set_control_port_value (p, index, value)
+            self.ports.props.append(props)
