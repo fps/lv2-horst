@@ -59,7 +59,11 @@ namespace horst {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
 
-    virtual int get_control_port_index (const std::string &name) {
+    virtual int get_port_index (const std::string &name) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual port_properties get_port_properties (size_t index) {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
   };
@@ -270,7 +274,7 @@ namespace horst {
       return 0;
     }
 
-    virtual int get_control_port_index (const std::string &name) override {
+    virtual int get_port_index (const std::string &name) override {
       return m_plugin->find_port (name);
     }
 
@@ -301,6 +305,14 @@ namespace horst {
       }
       return m_atomic_midi_bindings[index];
     }
+
+    virtual port_properties get_port_properties (size_t index) override {
+      if (index >= m_port_values.size ()) {
+        throw std::runtime_error ("horst: plugin_unit: index out of bounds");
+      }
+      return m_plugin->m_port_properties[index];
+    }
+
   };
 
   struct internal_plugin_unit : public unit {
