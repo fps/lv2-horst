@@ -8,7 +8,9 @@ uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 p = h.lv2_unit(uri, "p", False)
 
 def idx(h, p, name):
-  return h.get_control_port_index(p, name)
+  for index in range(h.get_number_of_ports(p)):
+    if h.get_port_properties(p, index).name == name:
+      return index
 
 h.set_control_port_value(p, idx(h, p, "feedback"), 0.9)
 h.set_control_port_value(p, idx(h, p, "amount"), 1)

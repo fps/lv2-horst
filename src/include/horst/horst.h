@@ -126,10 +126,6 @@ namespace horst {
   
     }
 
-    int get_port_index (unit_wrapper wrapper, const std::string &name) {
-      return wrapper.m_unit->get_port_index (name);
-    }
-
     void set_control_port_value (unit_wrapper wrapper, int port_index, float value) {
       wrapper.m_unit->set_control_port_value (port_index, value); 
     }
@@ -146,7 +142,11 @@ namespace horst {
       return wrapper.m_unit->get_midi_binding (index);
     }
 
-    port_properties get_port_properties (unit_wrapper wrapper, size_t index) {
+    int get_number_of_ports (unit_wrapper wrapper) {
+      return wrapper.m_unit->get_number_of_ports ();
+    }
+
+    port_properties get_port_properties (unit_wrapper wrapper, int index) {
       return wrapper.m_unit->get_port_properties (index);
     }
 

@@ -40,10 +40,10 @@ BOOST_PYTHON_MODULE(horst)
     .def ("lv2_internal_unit", &horst::horst_jack::create_lv2_internal_unit)
     .def ("set_control_port_value", &horst::horst_jack::set_control_port_value)
     .def ("get_control_port_value", &horst::horst_jack::get_control_port_value)
-    .def ("get_port_index", &horst::horst_jack::get_port_index)
     .def ("get_port_properties", &horst::horst_jack::get_port_properties)
     .def ("set_midi_binding", &horst::horst_jack::set_midi_binding)
     .def ("get_midi_binding", &horst::horst_jack::get_midi_binding)
+    .def ("get_number_of_ports", &horst::horst_jack::get_number_of_ports)
     .def ("connect", &horst::horst_jack::connect)
   ;
 }

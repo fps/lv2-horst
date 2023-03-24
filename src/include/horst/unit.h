@@ -39,15 +39,7 @@ namespace horst {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
 
-    virtual void set_control_port_value (const std::string &name, float value) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
     virtual float get_control_port_value (size_t index) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual float get_control_port_value (const std::string &name)  {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
 
@@ -59,11 +51,11 @@ namespace horst {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
 
-    virtual int get_port_index (const std::string &name) {
+    virtual int get_number_of_ports () {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
 
-    virtual port_properties get_port_properties (size_t index) {
+    virtual port_properties get_port_properties (int index) {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
   };
@@ -274,8 +266,8 @@ namespace horst {
       return 0;
     }
 
-    virtual int get_port_index (const std::string &name) override {
-      return m_plugin->find_port (name);
+    int get_number_of_ports () override {
+      return (int)(m_plugin->m_port_properties.size ());
     }
 
     void set_control_port_value (size_t index, float value) override {
@@ -306,10 +298,7 @@ namespace horst {
       return m_atomic_midi_bindings[index];
     }
 
-    virtual port_properties get_port_properties (size_t index) override {
-      if (index >= m_port_values.size ()) {
-        throw std::runtime_error ("horst: plugin_unit: index out of bounds");
-      }
+    virtual port_properties get_port_properties (int index) override {
       return m_plugin->m_port_properties[index];
     }
 
