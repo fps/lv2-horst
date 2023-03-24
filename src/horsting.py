@@ -19,7 +19,7 @@ class lv2:
             props = h.get_port_properties (self.unit, index)
             props.index = index
             props.jack_name = self.jack_client_name + ":" + props.name
-            setattr(props, 'value', property (lambda v: h.set_control_port_value(self.unit, index, v), lambda: h.get_control_port_value(self.unit, index)))
-            setattr(self.ports, props.name+'_', props)
+            props.__class__.value = property (lambda s: h.get_control_port_value(self.unit, index), lambda s, v: h.set_control_port_value(self.unit, index, v))
+            setattr(self, 'port_' + props.name, props)
             self.port_properties[index] = props
             self.ports.props.append(props)
