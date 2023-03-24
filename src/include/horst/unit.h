@@ -10,15 +10,58 @@ namespace horst {
     int unit_jack_sample_rate_callback (jack_nframes_t sample_rate, void *arg);
   }
 
+  const int cc_mask = 128 + 32 + 16;
+
+  struct midi_binding {
+    bool m_enabled;
+    int m_channel;
+    int m_cc;
+    float m_factor;
+    float m_offset;
+
+    midi_binding (bool enabled = false, int channel = 0, int cc = 0, float factor = 1.0f, float offset = 0.0f) :
+      m_enabled (enabled),
+      m_channel (channel),
+      m_cc (cc),
+      m_factor (factor),
+      m_offset (offset)
+    {
+
+    }
+  };
+
   struct unit {
     virtual ~unit () {
 
     }
 
-    virtual void set_control_port_value (size_t index, float value) = 0;
-    virtual void set_control_port_value (const std::string &name, float value) = 0;
-    virtual float get_control_port_value (size_t index) = 0;
-    virtual float get_control_port_value (const std::string &name) = 0;
+    virtual void set_control_port_value (size_t index, float value) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual void set_control_port_value (const std::string &name, float value) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual float get_control_port_value (size_t index) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual float get_control_port_value (const std::string &name)  {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual void set_midi_binding (size_t index, const midi_binding &binding) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual midi_binding get_midi_binding (size_t index) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual int get_control_port_index (const std::string &name) {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
   };
 
   typedef std::shared_ptr<unit> unit_ptr;
@@ -26,7 +69,9 @@ namespace horst {
   struct unit_wrapper {
     unit_ptr m_unit;
     unit_wrapper (unit_ptr unit) :
-      m_unit (unit) {
+      m_unit (unit)
+    {
+
     }
   };
 
@@ -39,7 +84,8 @@ namespace horst {
     virtual int sample_rate_callback (jack_nframes_t sample_rate) = 0;
 
     jack_unit (bool expose_control_ports) :
-      m_expose_control_ports (expose_control_ports) {
+      m_expose_control_ports (expose_control_ports)
+    {
 
     }
   };
@@ -58,14 +104,16 @@ namespace horst {
     }
   }
 
+
   struct plugin_unit : public jack_unit {
     bool m_internal_client;
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
     jack_port_t *m_jack_midi_port;
-
+    // TODO: allow more than one binding per port:
     std::vector<std::atomic<float>> m_atomic_port_values;
     std::vector<float> m_port_values;
+    std::vector<std::atomic<midi_binding>> m_atomic_midi_bindings;
 
     plugin_ptr m_plugin;
 
@@ -76,7 +124,9 @@ namespace horst {
       m_jack_ports (plugin->m_port_properties.size ()),
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
-      m_plugin (plugin) {
+      m_atomic_midi_bindings (plugin->m_port_properties.size ()),
+      m_plugin (plugin)
+    {
       std::string client_name = jack_client_name;
       if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
       if (m_jack_client == 0) {
@@ -135,6 +185,45 @@ namespace horst {
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
+
+      void *midi_port_buffer = jack_port_get_buffer (m_jack_midi_port, nframes);
+      int event_count = jack_midi_get_event_count (midi_port_buffer);
+
+      // TODO: do sample accurate event processing...
+      for (int index = 0; index < event_count; ++index) {
+        jack_midi_event_t event;
+        jack_midi_event_get (&event, midi_port_buffer, index);
+
+        if (event.size != 3) continue;
+        if ((event.buffer[0] & cc_mask) != cc_mask) continue;
+
+        const int channel = event.buffer[0] & 15;
+        const int cc = event.buffer[1];
+        const float value = event.buffer[2] / 127.0f;
+
+        for (size_t port_index = 0; port_index < m_atomic_midi_bindings.size (); ++port_index) {
+          const midi_binding &binding = m_atomic_midi_bindings[port_index];
+
+          if (!binding.m_enabled) continue;
+
+          // std::cout << binding.m_enabled << " " << binding.m_cc << " " << binding.m_channel << " " << cc << " " << channel << " " << value << "\n";
+
+          if (binding.m_cc != cc) continue;
+          if (binding.m_channel != channel) continue;
+
+
+          const port_properties &props = m_plugin->m_port_properties[port_index];
+
+          const float transformed_value = binding.m_offset + binding.m_factor * value;
+
+          const float mapped_value = props.m_minimum_value + (props.m_maximum_value - props.m_minimum_value) * transformed_value;
+
+          std::cout << transformed_value << " " << mapped_value << "\n";
+
+          m_atomic_port_values[port_index] = mapped_value;
+        }
+      }
+
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
         const port_properties &p = m_plugin->m_port_properties[index];
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
@@ -149,6 +238,7 @@ namespace horst {
           m_plugin->connect_port (index, &m_port_values[index]);
         }
       }
+
       m_plugin->run (nframes);
       return 0;
     }
@@ -164,12 +254,8 @@ namespace horst {
       return 0;
     }
 
-    void set_control_port_value (const std::string &name, float value) override {
-      set_control_port_value (m_plugin->find_port (name), value);
-    }
-
-    float get_control_port_value (const std::string &name) override {
-      return get_control_port_value (m_plugin->find_port (name));
+    virtual int get_control_port_index (const std::string &name) override {
+      return m_plugin->find_port (name);
     }
 
     void set_control_port_value (size_t index, float value) override {
@@ -185,6 +271,20 @@ namespace horst {
       }
       return m_atomic_port_values [index];
     }
+
+    void set_midi_binding (size_t index, const midi_binding &binding) override {
+      if (index >= m_port_values.size ()) {
+        throw std::runtime_error ("horst: plugin_unit: index out of bounds");
+      }
+      m_atomic_midi_bindings[index] = binding;
+    }
+
+    midi_binding get_midi_binding (size_t index) override {
+      if (index >= m_port_values.size ()) {
+        throw std::runtime_error ("horst: plugin_unit: index out of bounds");
+      }
+      return m_atomic_midi_bindings[index];
+    }
   };
 
   struct internal_plugin_unit : public unit {
@@ -195,22 +295,6 @@ namespace horst {
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
 
-    }
-
-    void set_control_port_value (const std::string &name, float value) override {
-      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
-    }
-
-    float get_control_port_value (const std::string &name) override {
-      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
-    }
-
-    void set_control_port_value (size_t index, float value) override {
-      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
-    }
-
-    float get_control_port_value (size_t index) override {
-      throw std::runtime_error ("horst: internal_plugin_unit: not implemented yet");
     }
 
     ~internal_plugin_unit () {

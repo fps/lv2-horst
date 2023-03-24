@@ -9,12 +9,14 @@ cs = horst.connections()
 
 uri = "http://calf.sourceforge.net/plugins/Reverb"
 
+units = []
+
 number_of_units = 5
 index = 0
 cs.add("system:capture_1", str(index)+"_"+uri+":"+"in_l")
 for plugin_index in range(0,number_of_units):
   try:
-    h.insert_lv2_unit(uri, str(index)+"_"+uri, False)
+    units.append(h.lv2_unit(uri, str(index)+"_"+uri, False))
     if plugin_index > 0:
       cs.add(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l")
   except Exception as e:
@@ -24,7 +26,7 @@ cs.add(str(index-1)+"_"+uri+":"+"out_l", "system:playback_1")
 
 for plugin_index in range(0,number_of_units):
   try:
-    h.insert_lv2_unit(uri, str(index)+"_"+uri, True)
+    units.append(h.lv2_unit(uri, str(index)+"_"+uri, True))
     if plugin_index > 0:
       cs.add(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l")
   except Exception as e:
@@ -33,7 +35,7 @@ for plugin_index in range(0,number_of_units):
 
 for plugin_index in range(0,number_of_units):
   try:
-    h.insert_lv2_internal_unit(uri, str(index)+"_"+uri, False)
+    units.append(h.lv2_internal_unit(uri, str(index)+"_"+uri, False))
     if plugin_index > 0:
       cs.add(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l")
   except Exception as e:
@@ -42,7 +44,7 @@ for plugin_index in range(0,number_of_units):
 
 for plugin_index in range(0,number_of_units):
   try:
-    h.insert_lv2_internal_unit(uri, str(index)+"_"+uri, True)
+    units.append(h.lv2_internal_unit(uri, str(index)+"_"+uri, True))
     if plugin_index > 0:
       cs.add(str(index)+"_"+uri+":"+"out_l", str(index-1)+"_"+uri+":"+"in_l")
   except Exception as e:

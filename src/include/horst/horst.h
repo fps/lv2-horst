@@ -13,6 +13,7 @@
 
 #include <jack/jack.h>
 #include <jack/intclient.h>
+#include <jack/midiport.h>
 
 #include <horst/unit.h>
 
@@ -27,21 +28,6 @@ namespace horst {
 
     }
   }
-
-  struct midi_binding {
-    int m_cc;
-    int m_channel;
-    float m_factor;
-    float m_offset;
-
-    midi_binding (const int cc, const int channel = 0, const float factor = 1.0, const float offset = 0.0) :
-      m_cc (cc),
-      m_channel (channel),
-      m_factor (factor),
-      m_offset (offset) {
-
-    }
-  };
 
   struct connection {
     const std::string m_from;
@@ -139,21 +125,25 @@ namespace horst {
     void insert_ladspa_plugin (int plugin_index, std::string library_file_name, std::string plugin_label) {
   
     }
-  
-    void set_control_port_value (unit_wrapper wrapper, int port_index, float value) {
-      wrapper.m_unit->set_control_port_value (port_index, value); 
+
+    int get_control_port_index (unit_wrapper wrapper, const std::string &name) {
+      return wrapper.m_unit->get_control_port_index (name);
     }
 
-    void set_control_port_value (unit_wrapper wrapper, const std::string &port_name, float value) {
-      wrapper.m_unit->set_control_port_value (port_name, value); 
+    void set_control_port_value (unit_wrapper wrapper, int port_index, float value) {
+      wrapper.m_unit->set_control_port_value (port_index, value); 
     }
 
     float get_control_port_value (unit_wrapper wrapper, int port_index) {
       return wrapper.m_unit->get_control_port_value (port_index); 
     }
 
-    float get_control_port_value (unit_wrapper wrapper, const std::string &port_name) {
-      return wrapper.m_unit->get_control_port_value (port_name); 
+    void set_midi_binding (unit_wrapper wrapper, size_t index, const midi_binding &binding) {
+      wrapper.m_unit->set_midi_binding (index, binding);
+    }
+
+    midi_binding get_midi_binding (unit_wrapper wrapper, size_t index) {
+      return wrapper.m_unit->get_midi_binding (index);
     }
 
     void connect (const connections& cs) {

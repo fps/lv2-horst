@@ -16,7 +16,7 @@ CLI_CXXFLAGS =
 CLI_LDFLAGS = -lboost_program_options -lreadline 
 
 CXXFLAGS += $(OPTIMIZATION_FLAGS) -fPIC -std=c++11 -Isrc/include -march=native -mcpu=native -Wall -pedantic `pkg-config lilv-0 --cflags`
-LDFLAGS += `pkg-config lilv-0 --libs` -ljack
+LDFLAGS += `pkg-config lilv-0 --libs` -ljack -latomic
 
 # src/horst: $(HORST_SOURCES) $(HORS_HEADERS)
 # We need this static rule to add the dependency on all headers
