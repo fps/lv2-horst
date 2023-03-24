@@ -104,11 +104,11 @@ namespace horst {
     }
   }
 
-
   struct plugin_unit : public jack_unit {
     bool m_internal_client;
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
+    std::vector<float *> m_jack_port_buffers;
     jack_port_t *m_jack_midi_port;
     // TODO: allow more than one binding per port:
     std::vector<std::atomic<float>> m_atomic_port_values;
@@ -122,6 +122,7 @@ namespace horst {
       m_internal_client (jack_client != 0),
       m_jack_client (jack_client),
       m_jack_ports (plugin->m_port_properties.size ()),
+      m_jack_port_buffers (plugin->m_port_properties.size ()),
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
@@ -186,48 +187,11 @@ namespace horst {
 
     virtual int process_callback (jack_nframes_t nframes) override {
 
-      void *midi_port_buffer = jack_port_get_buffer (m_jack_midi_port, nframes);
-      int event_count = jack_midi_get_event_count (midi_port_buffer);
-
-      // TODO: do sample accurate event processing...
-      for (int index = 0; index < event_count; ++index) {
-        jack_midi_event_t event;
-        jack_midi_event_get (&event, midi_port_buffer, index);
-
-        if (event.size != 3) continue;
-        if ((event.buffer[0] & cc_mask) != cc_mask) continue;
-
-        const int channel = event.buffer[0] & 15;
-        const int cc = event.buffer[1];
-        const float value = event.buffer[2] / 127.0f;
-
-        for (size_t port_index = 0; port_index < m_atomic_midi_bindings.size (); ++port_index) {
-          const midi_binding &binding = m_atomic_midi_bindings[port_index];
-
-          if (!binding.m_enabled) continue;
-
-          // std::cout << binding.m_enabled << " " << binding.m_cc << " " << binding.m_channel << " " << cc << " " << channel << " " << value << "\n";
-
-          if (binding.m_cc != cc) continue;
-          if (binding.m_channel != channel) continue;
-
-
-          const port_properties &props = m_plugin->m_port_properties[port_index];
-
-          const float transformed_value = binding.m_offset + binding.m_factor * value;
-
-          const float mapped_value = props.m_minimum_value + (props.m_maximum_value - props.m_minimum_value) * transformed_value;
-
-          std::cout << transformed_value << " " << mapped_value << "\n";
-
-          m_atomic_port_values[port_index] = mapped_value;
-        }
-      }
-
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
         const port_properties &p = m_plugin->m_port_properties[index];
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
-          m_plugin->connect_port (index, (float*)jack_port_get_buffer (m_jack_ports[index], nframes));
+          m_jack_port_buffers[index] = (float*)jack_port_get_buffer (m_jack_ports[index], nframes);
+          m_plugin->connect_port (index, m_jack_port_buffers[index]);
         }
         if (p.m_is_control && !m_expose_control_ports) {
           if (p.m_is_input) {
@@ -239,7 +203,59 @@ namespace horst {
         }
       }
 
-      m_plugin->run (nframes);
+      void *midi_port_buffer = jack_port_get_buffer (m_jack_midi_port, nframes);
+      int event_count = jack_midi_get_event_count (midi_port_buffer);
+
+      jack_nframes_t processed_frames = 0;
+
+      for (int event_index = 0; event_index < event_count; ++event_index) {
+        jack_midi_event_t event;
+        jack_midi_event_get (&event, midi_port_buffer, event_index);
+
+        if (event.size != 3) continue;
+        if ((event.buffer[0] & cc_mask) != cc_mask) continue;
+
+        const int channel = event.buffer[0] & 15;
+        const int cc = event.buffer[1];
+        const float value = event.buffer[2] / 127.0f;
+
+        bool changed = false;
+
+        for (size_t port_index = 0; port_index < m_atomic_midi_bindings.size (); ++port_index) {
+          const port_properties &props = m_plugin->m_port_properties[port_index];
+          if (!(props.m_is_input && props.m_is_control)) continue;
+
+          const midi_binding &binding = m_atomic_midi_bindings[port_index];
+
+          if (!binding.m_enabled) continue;
+          if (binding.m_cc != cc) continue;
+          if (binding.m_channel != channel) continue;
+
+          m_plugin->run (event.time - processed_frames);
+          processed_frames = event.time;
+
+          changed = true;
+
+          const float transformed_value = binding.m_offset + binding.m_factor * value;
+
+          const float mapped_value = props.m_minimum_value + (props.m_maximum_value - props.m_minimum_value) * transformed_value;
+
+          // std::cout << event.time << " " << port_index << " " << mapped_value << "\n";
+
+          m_port_values[port_index] = m_atomic_port_values[port_index] = mapped_value;
+        }
+
+        if (changed) {
+          for (size_t port_index = 0; port_index < m_jack_port_buffers.size (); ++port_index) {
+            const port_properties &p = m_plugin->m_port_properties[port_index];
+            if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
+              m_plugin->connect_port (port_index, m_jack_port_buffers[port_index] + processed_frames);
+            }
+          }
+        }
+      }
+
+      m_plugin->run (nframes - processed_frames);
       return 0;
     }
 

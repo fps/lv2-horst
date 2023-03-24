@@ -20,10 +20,20 @@ namespace horst {
     std::vector<port_properties> m_port_properties;
 
     virtual const std::string &get_name () const = 0;
+
     virtual void instantiate (double sample_rate) = 0;
+
     virtual void connect_port (size_t index, float *data) = 0;
+
     virtual void run (size_t nframes) = 0;
-    virtual size_t find_port (const std::string &name) = 0;
+
+    virtual size_t find_port (const std::string &name) {
+      for (size_t index = 0; index < m_port_properties.size(); ++index) {
+        if (m_port_properties[index].m_name == name) { return index; }
+      }
+
+      throw std::runtime_error ("horst: lv2_plugin: Port not found: " + name);
+    }
 
     virtual ~plugin_base () {}
   };
@@ -112,14 +122,6 @@ namespace horst {
 
     virtual void run (size_t nframes) override {
       lilv_instance_run (m_plugin_instance->m, nframes);
-    }
-
-    virtual size_t find_port (const std::string &name) override {
-      for (size_t index = 0; index < m_port_properties.size(); ++index) {
-        if (m_port_properties[index].m_name == name) { return index; }
-      }
-  
-      throw std::runtime_error ("horst: lv2_plugin: Port not found: " + name);
     }
   };
 

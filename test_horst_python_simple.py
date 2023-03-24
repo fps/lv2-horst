@@ -5,7 +5,7 @@ h = horst.horst()
 
 uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 
-p = h.lv2_unit(uri, "delay", False)
+p = h.lv2_unit(uri, "p", False)
 
 def idx(h, p, name):
   return h.get_control_port_index(p, name)
@@ -18,10 +18,10 @@ b = horst.midi_binding(True, 0, 0)
 h.set_midi_binding(p, idx(h, p, "feedback"), b)
 
 cs = horst.connections()
-cs.add("system:capture_1", "delay:in_l")
-cs.add("system:capture_2", "delay:in_r")
-cs.add("delay:out_l", "system:playback_1")
-cs.add("delay:out_r", "system:playback_2")
+cs.add("system:capture_1", "p:in_l")
+cs.add("system:capture_2", "p:in_r")
+cs.add("p:out_l", "system:playback_1")
+cs.add("p:out_r", "system:playback_2")
 h.connect(cs)
 
 while True:
