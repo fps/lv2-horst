@@ -5,7 +5,7 @@ namespace bp = pybind11;
 
 PYBIND11_MODULE(horst, m)
 {
-  bp::class_<horst::port_properties>(m, "port_properties")
+  bp::class_<horst::port_properties>(m, "port_properties", bp::dynamic_attr ())
     .def_readonly ("is_audio", &horst::port_properties::m_is_audio)
     .def_readonly ("is_control", &horst::port_properties::m_is_control)
     .def_readonly ("is_input", &horst::port_properties::m_is_input)
@@ -36,20 +36,29 @@ PYBIND11_MODULE(horst, m)
     )
   ;
 
-  bp::class_<horst::unit_wrapper> (m, "unit_wrapper");
+  bp::class_<horst::unit, horst::unit_ptr> (m, "unit", bp::dynamic_attr ())
+    .def ("set_control_port_value", &horst::unit::set_control_port_value)
+    .def ("get_control_port_value", &horst::unit::get_control_port_value)
+    .def ("set_midi_binding", &horst::unit::set_midi_binding)
+    .def ("get_midi_binding", &horst::unit::get_midi_binding)
+    .def ("get_number_of_ports", &horst::unit::get_number_of_ports)
+    .def ("get_port_properties", &horst::unit::get_port_properties)
+  ;
 
-  bp::class_<horst::horst, std::shared_ptr<horst::horst>> (m, "horst")
+  bp::class_<horst::horst, horst::horst_ptr> (m, "horst")
     .def (bp::init<> ())
-    //.def ("create", &horst::horst::create)
+    .def ("lv2", &horst::horst::lv2)
+    .def ("lv2_internal", &horst::horst::lv2_internal)
+    /*
+    .def ("create", &horst::horst::create)
     .def ("insert_ladspa_plugin", &horst::horst::insert_ladspa_plugin)
-    .def ("lv2_unit", &horst::horst::create_lv2_unit)
-    .def ("lv2_internal_unit", &horst::horst::create_lv2_internal_unit)
     .def ("set_control_port_value", &horst::horst::set_control_port_value)
     .def ("get_control_port_value", &horst::horst::get_control_port_value)
     .def ("get_port_properties", &horst::horst::get_port_properties)
     .def ("set_midi_binding", &horst::horst::set_midi_binding)
     .def ("get_midi_binding", &horst::horst::get_midi_binding)
     .def ("get_number_of_ports", &horst::horst::get_number_of_ports)
+    */
     .def ("connect", &horst::horst::connect)
   ;
 }

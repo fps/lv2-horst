@@ -96,11 +96,11 @@ namespace horst {
 
     }
 
-    unit_wrapper create_lv2_unit (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
-      return unit_wrapper (unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports)));
+    unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+      return unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports));
     }
 
-    unit_wrapper create_lv2_internal_unit (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
+    unit_ptr lv2_internal (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       jack_status_t jack_status;
       // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
 
@@ -119,13 +119,14 @@ namespace horst {
         throw std::runtime_error ("horst: horst: Failed to create internal client. Name: " + jack_client_name);
       }
       // jack_client_close (jack_client);
-      return unit_wrapper (unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient)));
+      return unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient));
     }
   
-    void insert_ladspa_plugin (int plugin_index, std::string library_file_name, std::string plugin_label) {
+    unit_ptr ladspa (int plugin_index, std::string library_file_name, std::string plugin_label) {
   
     }
 
+    /*
     void set_control_port_value (unit_wrapper wrapper, int port_index, float value) {
       wrapper.m_unit->set_control_port_value (port_index, value); 
     }
@@ -149,6 +150,7 @@ namespace horst {
     port_properties get_port_properties (unit_wrapper wrapper, int index) {
       return wrapper.m_unit->get_port_properties (index);
     }
+    */
 
     void connect (const connections& cs) {
       for (size_t index = 0; index < cs.m.size(); ++index) {
@@ -156,6 +158,8 @@ namespace horst {
       }
     }
   };
+
+  typedef std::shared_ptr<horst> horst_ptr;
 }
 
 
