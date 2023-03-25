@@ -41,9 +41,9 @@ index = 0
 for uri in uris:
   try:
     print("Adding: " + uri)
-    units.append(h.lv2_unit(uri, str(index)+"_"+uri, False))
+    units.append(h.lv2(uri, str(index)+"_"+uri, False))
   except Exception as e:
-    print ("Failed to insert plugin " + uri + ": " + str(e))
+    print ("Failed to create plugin " + uri + ": " + str(e))
     pass
   index = index + 1
 
