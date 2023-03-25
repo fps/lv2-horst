@@ -1,12 +1,12 @@
 #include <horst/horst.h>
 
 extern "C" {
-  static horst::horst_jack *the_horst = 0;
+  static horst::horst *the_horst = 0;
 
   static void init () __attribute__((constructor));
   static void init () {
     // std::cout << "init\n";
-    the_horst = new horst::horst_jack;
+    the_horst = new horst::horst;
   }
 
   static void fini () __attribute((destructor));

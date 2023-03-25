@@ -49,14 +49,14 @@ namespace horst {
     }
   };
 
-  struct horst_jack {
+  struct horst {
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
     std::string m_horst_dli_fname;
     std::string m_jack_dli_fname;
     jack_client_ptr m_jack_client;
 
-    horst_jack () :
+    horst () :
       m_lilv_world (new lilv_world),
       m_lilv_plugins (new lilv_plugins (m_lilv_world)) {
       Dl_info dl_info;
@@ -64,13 +64,13 @@ namespace horst {
         m_horst_dli_fname = dl_info.dli_fname;
         // std::cout << "horst: horst_dli_fname: " << m_horst_dli_fname << "\n";
       } else {
-        throw std::runtime_error ("horst: horst_jack: Failed to find horst dli_fname");
+        throw std::runtime_error ("horst: horst: Failed to find horst dli_fname");
       }
       if (dladdr ((const void *)jack_set_process_callback, &dl_info)) {
         m_jack_dli_fname = dl_info.dli_fname;
         // std::cout << "horst: jack_dli_fname: " << m_jack_dli_fname << "\n";
       } else {
-        throw std::runtime_error ("horst: horst_jack: Failed to find jack dli_fname");
+        throw std::runtime_error ("horst: horst: Failed to find jack dli_fname");
       }
 
       m_jack_client = jack_client_ptr (new jack_client ("horst-loader", JackNullOption));
@@ -92,7 +92,11 @@ namespace horst {
       return load_name;
     }
 
-    ~horst_jack () {
+    static std::shared_ptr<horst> create () {
+      return new horst;
+    }
+
+    ~horst () {
 
     }
 
@@ -116,7 +120,7 @@ namespace horst {
       if (jack_intclient == 0) {
         std::cout << jack_status << "\n";
         // jack_client_close (jack_client);
-        throw std::runtime_error ("horst: horst_jack: Failed to create internal client. Name: " + jack_client_name);
+        throw std::runtime_error ("horst: horst: Failed to create internal client. Name: " + jack_client_name);
       }
       // jack_client_close (jack_client);
       return unit_wrapper (unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient)));

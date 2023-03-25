@@ -1,11 +1,11 @@
 #include <horst/horst.h>
-#include <boost/python.hpp>
+#include <pybind11/pybind11.h>
 
-namespace bp = boost::python;
+namespace bp = pybind11;
 
-BOOST_PYTHON_MODULE(horst)
+PYBIND11_MODULE(horst, m)
 {
-  bp::class_<horst::port_properties>("port_properties", bp::no_init)
+  bp::class_<horst::port_properties>(m, "port_properties")
     .def_readonly ("is_audio", &horst::port_properties::m_is_audio)
     .def_readonly ("is_control", &horst::port_properties::m_is_control)
     .def_readonly ("is_input", &horst::port_properties::m_is_input)
@@ -17,33 +17,38 @@ BOOST_PYTHON_MODULE(horst)
     .def_readonly ("name", &horst::port_properties::m_name)
   ;
 
-  bp::class_<horst::connection>("connection", 
-    bp::init<const std::string&, const std::string&> ())
+  bp::class_<horst::connection>(m, "connection")
+    .def (bp::init<const std::string&, const std::string&> ())
   ;
 
   void (horst::connections::*add1)(const std::string &, const std::string &) = &horst::connections::add;
   void (horst::connections::*add2)(const horst::connection &) = &horst::connections::add;
-  bp::class_<horst::connections>("connections")
+  bp::class_<horst::connections>(m, "connections")
+    .def (bp::init<> ())
     .def ("add", add1)
     .def ("add", add2)
   ;
 
-  bp::class_<horst::midi_binding>("midi_binding",
-    bp::init<bool, int, int, bp::optional<float, float>>())
+  bp::class_<horst::midi_binding>(m, "midi_binding")
+    .def (
+      bp::init<bool, int, int, float, float>(), 
+      bp::arg ("enabled") = false, bp::arg ("channel") = 0, bp::arg ("cc") = 0, bp::arg ("factor") = 1.0f, bp::arg ("offset") = 0.0f
+    )
   ;
 
-  bp::class_<horst::unit_wrapper> ("unit_wrapper", bp::no_init);
+  bp::class_<horst::unit_wrapper> (m, "unit_wrapper");
 
-  bp::class_<horst::horst_jack>("horst")
-    .def ("insert_ladspa_plugin", &horst::horst_jack::insert_ladspa_plugin)
-    .def ("lv2_unit", &horst::horst_jack::create_lv2_unit)
-    .def ("lv2_internal_unit", &horst::horst_jack::create_lv2_internal_unit)
-    .def ("set_control_port_value", &horst::horst_jack::set_control_port_value)
-    .def ("get_control_port_value", &horst::horst_jack::get_control_port_value)
-    .def ("get_port_properties", &horst::horst_jack::get_port_properties)
-    .def ("set_midi_binding", &horst::horst_jack::set_midi_binding)
-    .def ("get_midi_binding", &horst::horst_jack::get_midi_binding)
-    .def ("get_number_of_ports", &horst::horst_jack::get_number_of_ports)
-    .def ("connect", &horst::horst_jack::connect)
+  bp::class_<horst::horst>(m, "horst")
+    .def (bp::init<> ())
+    .def ("insert_ladspa_plugin", &horst::horst::insert_ladspa_plugin)
+    .def ("lv2_unit", &horst::horst::create_lv2_unit)
+    .def ("lv2_internal_unit", &horst::horst::create_lv2_internal_unit)
+    .def ("set_control_port_value", &horst::horst::set_control_port_value)
+    .def ("get_control_port_value", &horst::horst::get_control_port_value)
+    .def ("get_port_properties", &horst::horst::get_port_properties)
+    .def ("set_midi_binding", &horst::horst::set_midi_binding)
+    .def ("get_midi_binding", &horst::horst::get_midi_binding)
+    .def ("get_number_of_ports", &horst::horst::get_number_of_ports)
+    .def ("connect", &horst::horst::connect)
   ;
 }
