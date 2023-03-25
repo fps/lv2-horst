@@ -9,6 +9,7 @@ namespace horst {
     bool m_is_control;
     bool m_is_input;
     bool m_is_output;
+    bool m_is_side_chain;
     float m_minimum_value;
     float m_default_value;
     float m_maximum_value;
@@ -69,6 +70,7 @@ namespace horst {
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
       lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
       lilv_uri_node control (world, LILV_URI_CONTROL_PORT);
+      lilv_uri_node side_chain (world, "http://lv2plug.in/ns/lv2core#isSideChain");
 
       m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));
       for (size_t index = 0; index < m_port_properties.size(); ++index) {
@@ -80,6 +82,7 @@ namespace horst {
         p.m_is_control = lilv_port_is_a (m_lilv_plugin->m, lilv_port, control.m);
         p.m_is_input = lilv_port_is_a (m_lilv_plugin->m, lilv_port, input.m);
         p.m_is_output = lilv_port_is_a (m_lilv_plugin->m, lilv_port, output.m);
+        p.m_is_side_chain = lilv_port_has_property (m_lilv_plugin->m, lilv_port, side_chain.m);
 
         if (p.m_is_input && p.m_is_control) {
           LilvNode *def;
@@ -106,7 +109,13 @@ namespace horst {
 
       LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
       if (features != 0) {
-        throw std::runtime_error (std::string ("horst: lv2_plugin: Unsupported feature: "));
+        std::stringstream s;
+        LILV_FOREACH(nodes, i, features) {
+          const LilvNode *node = lilv_nodes_get (features, i);
+          s << " " << lilv_node_as_uri (node);
+        }
+        lilv_nodes_free (features);
+        throw std::runtime_error (std::string ("horst: lv2_plugin: Unsupported features:" + s.str()));
       }
     }
 
