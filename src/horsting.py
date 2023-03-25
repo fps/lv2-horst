@@ -50,7 +50,7 @@ class unit:
     for index in range (self.unit.get_number_of_ports ()):
       p = props (self, index)
       p.jack_name = self.jack_client_name + ":" + p.name
-      setattr(self, 'port_' + p.name, p)
+      setattr(self, '_' + p.name, p)
       self.port_properties[index] = p
       self.port_properties[p.name] = p
       self.ports.props.append(p)      
