@@ -126,32 +126,6 @@ namespace horst {
       return unit_ptr ();  
     }
 
-    /*
-    void set_control_port_value (unit_wrapper wrapper, int port_index, float value) {
-      wrapper.m_unit->set_control_port_value (port_index, value); 
-    }
-
-    float get_control_port_value (unit_wrapper wrapper, int port_index) {
-      return wrapper.m_unit->get_control_port_value (port_index); 
-    }
-
-    void set_midi_binding (unit_wrapper wrapper, size_t index, const midi_binding &binding) {
-      wrapper.m_unit->set_midi_binding (index, binding);
-    }
-
-    midi_binding get_midi_binding (unit_wrapper wrapper, size_t index) {
-      return wrapper.m_unit->get_midi_binding (index);
-    }
-
-    int get_number_of_ports (unit_wrapper wrapper) {
-      return wrapper.m_unit->get_number_of_ports ();
-    }
-
-    port_properties get_port_properties (unit_wrapper wrapper, int index) {
-      return wrapper.m_unit->get_port_properties (index);
-    }
-    */
-
     void connect (const connections& cs) {
       for (size_t index = 0; index < cs.m.size(); ++index) {
         jack_connect (m_jack_client->m, cs.m[index].m_from.c_str (), cs.m[index].m_to.c_str ());
