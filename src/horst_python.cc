@@ -1,5 +1,5 @@
-#include <horst/horst.h>
 #include <pybind11/pybind11.h>
+#include <horst/horst.h>
 
 namespace bp = pybind11;
 
@@ -38,8 +38,9 @@ PYBIND11_MODULE(horst, m)
 
   bp::class_<horst::unit_wrapper> (m, "unit_wrapper");
 
-  bp::class_<horst::horst>(m, "horst")
+  bp::class_<horst::horst, std::shared_ptr<horst::horst>> (m, "horst")
     .def (bp::init<> ())
+    //.def ("create", &horst::horst::create)
     .def ("insert_ladspa_plugin", &horst::horst::insert_ladspa_plugin)
     .def ("lv2_unit", &horst::horst::create_lv2_unit)
     .def ("lv2_internal_unit", &horst::horst::create_lv2_internal_unit)

@@ -92,10 +92,6 @@ namespace horst {
       return load_name;
     }
 
-    static std::shared_ptr<horst> create () {
-      return new horst;
-    }
-
     ~horst () {
 
     }
