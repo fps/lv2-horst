@@ -67,7 +67,8 @@ class unit:
     self.unit.set_midi_binding(port_index, b)
 
 class lv2(unit):
-  def __init__(self, uri, jack_client_name, expose_control_ports):
+  def __init__(self, uri, jack_client_name = "", expose_control_ports = False):
+    jack_client_name = uri if jack_client_name == "" else jack_client_name
     unit.__init__ (self, h.lv2 (uri, jack_client_name, expose_control_ports), jack_client_name, expose_control_ports)
 
   uris = subprocess.check_output(['lv2ls']).decode('utf-8').split('\n')

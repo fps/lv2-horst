@@ -3,7 +3,7 @@ import time
 
 uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 
-p = h.lv2(uri, "p", False)
+p = h.lv2(uri)
 
 p.port_feedback.value = 0.9
 p.port_amount.value = 1
