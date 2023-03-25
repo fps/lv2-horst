@@ -122,8 +122,8 @@ namespace horst {
       return unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient));
     }
   
-    unit_ptr ladspa (int plugin_index, std::string library_file_name, std::string plugin_label) {
-  
+    unit_ptr ladspa (std::string library_file_name, std::string plugin_label) {
+      return unit_ptr ();  
     }
 
     /*

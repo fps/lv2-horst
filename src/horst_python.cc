@@ -49,16 +49,6 @@ PYBIND11_MODULE(horst, m)
     .def (bp::init<> ())
     .def ("lv2", &horst::horst::lv2)
     .def ("lv2_internal", &horst::horst::lv2_internal)
-    /*
-    .def ("create", &horst::horst::create)
-    .def ("insert_ladspa_plugin", &horst::horst::insert_ladspa_plugin)
-    .def ("set_control_port_value", &horst::horst::set_control_port_value)
-    .def ("get_control_port_value", &horst::horst::get_control_port_value)
-    .def ("get_port_properties", &horst::horst::get_port_properties)
-    .def ("set_midi_binding", &horst::horst::set_midi_binding)
-    .def ("get_midi_binding", &horst::horst::get_midi_binding)
-    .def ("get_number_of_ports", &horst::horst::get_number_of_ports)
-    */
     .def ("connect", &horst::horst::connect)
   ;
 }
