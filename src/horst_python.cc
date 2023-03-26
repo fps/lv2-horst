@@ -45,6 +45,7 @@ PYBIND11_MODULE(horst, m)
     .def ("get_midi_binding", &horst::unit::get_midi_binding)
     .def ("get_number_of_ports", &horst::unit::get_number_of_ports)
     .def ("get_port_properties", &horst::unit::get_port_properties)
+    .def ("set_enabled", &horst::unit::set_enabled)
   ;
 
   bp::class_<horst::horst, horst::horst_ptr> (m, "horst")

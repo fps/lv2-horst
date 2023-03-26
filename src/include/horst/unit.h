@@ -31,6 +31,14 @@ namespace horst {
   };
 
   struct unit {
+    std::atomic<bool> m_atomic_enabled;
+
+    unit () :
+      m_atomic_enabled (true)
+    {
+
+    }
+
     virtual ~unit () {
 
     }
@@ -57,6 +65,10 @@ namespace horst {
 
     virtual port_properties get_port_properties (int index) {
       throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
+    virtual void set_enabled (bool enabled) {
+      m_atomic_enabled = enabled;
     }
   };
 
@@ -105,6 +117,8 @@ namespace horst {
     jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
     std::vector<float *> m_jack_port_buffers;
+    std::vector<std::vector<float>> m_zero_buffers;
+    std::vector<float *> m_port_data_locations;
     jack_port_t *m_jack_midi_port;
     // TODO: allow more than one binding per port:
     std::vector<std::atomic<float>> m_atomic_port_values;
@@ -119,6 +133,8 @@ namespace horst {
       m_jack_client (jack_client),
       m_jack_ports (plugin->m_port_properties.size ()),
       m_jack_port_buffers (plugin->m_port_properties.size ()),
+      m_zero_buffers (plugin->m_port_properties.size ()),
+      m_port_data_locations (plugin->m_port_properties.size ()),
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
@@ -183,12 +199,22 @@ namespace horst {
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
-
+      bool enabled = m_atomic_enabled;
+ 
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
         const port_properties &p = m_plugin->m_port_properties[index];
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
           m_jack_port_buffers[index] = (float*)jack_port_get_buffer (m_jack_ports[index], nframes);
-          m_plugin->connect_port (index, m_jack_port_buffers[index]);
+          if (p.m_is_input) {
+            if (enabled) {
+              m_port_data_locations[index] = m_jack_port_buffers[index];
+            } else {
+              m_port_data_locations[index] = &m_zero_buffers[index][0];
+            }
+          } else {
+            m_port_data_locations[index] = m_jack_port_buffers[index];
+          }
+          m_plugin->connect_port (index, m_port_data_locations[index]);
         }
         if (p.m_is_control && !m_expose_control_ports) {
           if (p.m_is_input) {
@@ -246,7 +272,7 @@ namespace horst {
           for (size_t port_index = 0; port_index < m_jack_port_buffers.size (); ++port_index) {
             const port_properties &p = m_plugin->m_port_properties[port_index];
             if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
-              m_plugin->connect_port (port_index, m_jack_port_buffers[port_index] + processed_frames);
+              m_plugin->connect_port (port_index, m_port_data_locations[port_index] + processed_frames);
             }
           }
         }
@@ -258,6 +284,9 @@ namespace horst {
 
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
       // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
+      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
+        m_zero_buffers[port_index].resize (buffer_size, 0);
+      }
       return 0;
     }
 
@@ -302,7 +331,6 @@ namespace horst {
     virtual port_properties get_port_properties (int index) override {
       return m_plugin->m_port_properties[index];
     }
-
   };
 
   struct internal_plugin_unit : public unit {
