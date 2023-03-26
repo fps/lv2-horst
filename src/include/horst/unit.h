@@ -139,7 +139,7 @@ namespace horst {
         if (p.m_is_control && p.m_is_input) {
           m_atomic_port_values[index] = p.m_default_value;
         }
-        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
+        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
           if (p.m_is_input) {
             m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
             if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
@@ -185,7 +185,7 @@ namespace horst {
 
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
         const port_properties &p = m_plugin->m_port_properties[index];
-        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
+        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
           m_jack_port_buffers[index] = (float*)jack_port_get_buffer (m_jack_ports[index], nframes);
           m_plugin->connect_port (index, m_jack_port_buffers[index]);
         }
@@ -244,7 +244,7 @@ namespace horst {
         if (changed) {
           for (size_t port_index = 0; port_index < m_jack_port_buffers.size (); ++port_index) {
             const port_properties &p = m_plugin->m_port_properties[port_index];
-            if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio) {
+            if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
               m_plugin->connect_port (port_index, m_jack_port_buffers[port_index] + processed_frames);
             }
           }

@@ -7,6 +7,7 @@ namespace horst {
   struct port_properties {
     bool m_is_audio;
     bool m_is_control;
+    bool m_is_cv;
     bool m_is_input;
     bool m_is_output;
     bool m_is_side_chain;
@@ -70,6 +71,7 @@ namespace horst {
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
       lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
       lilv_uri_node control (world, LILV_URI_CONTROL_PORT);
+      lilv_uri_node cv (world, LILV_URI_CV_PORT);
       lilv_uri_node side_chain (world, "http://lv2plug.in/ns/lv2core#isSideChain");
 
       m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));
@@ -80,6 +82,7 @@ namespace horst {
 
         p.m_is_audio = lilv_port_is_a (m_lilv_plugin->m, lilv_port, audio.m);
         p.m_is_control = lilv_port_is_a (m_lilv_plugin->m, lilv_port, control.m);
+        p.m_is_cv = lilv_port_is_a (m_lilv_plugin->m, lilv_port, cv.m);
         p.m_is_input = lilv_port_is_a (m_lilv_plugin->m, lilv_port, input.m);
         p.m_is_output = lilv_port_is_a (m_lilv_plugin->m, lilv_port, output.m);
         p.m_is_side_chain = lilv_port_has_property (m_lilv_plugin->m, lilv_port, side_chain.m);
