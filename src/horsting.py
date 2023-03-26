@@ -68,10 +68,15 @@ class unit:
 
 class lv2(unit):
   def __init__(self, uri, jack_client_name = "", expose_control_ports = False):
+    if uri in lv2.blacklisted_uris:
+      raise RuntimeError("blacklisted uri: " + uri)
     jack_client_name = uri if jack_client_name == "" else jack_client_name
     unit.__init__ (self, h.lv2 (uri, jack_client_name, expose_control_ports), jack_client_name, expose_control_ports)
 
   uris = subprocess.check_output(['lv2ls']).decode('utf-8').split('\n')
+  blacklisted_uris = [
+    'http://github.com/blablack/ams-lv2/fftvocoder'
+  ]
 
 def connect(connections):
   if type(connections) is horst.connections:
