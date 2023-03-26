@@ -70,11 +70,18 @@ namespace horst {
     LilvInstance *m;
     lilv_plugin_ptr m_plugin;
 
+    std::vector<std::vector<float>> m_initial_port_buffers;
+
     lilv_plugin_instance (lilv_plugin_ptr plugin, double sample_rate) :
       m (lilv_plugin_instantiate (plugin->m, sample_rate, 0)),
       m_plugin (plugin)
     {
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin_instance: Failed to instantiate plugin");
+
+      m_initial_port_buffers.resize(lilv_plugin_get_num_ports (m_plugin->m), std::vector<float>(32));
+      for (size_t port_index = 0; port_index < m_initial_port_buffers.size (); ++port_index) {
+        lilv_instance_connect_port (m, port_index, &m_initial_port_buffers[port_index][0]);
+      }
       lilv_instance_activate (m);
     }
 

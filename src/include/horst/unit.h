@@ -138,6 +138,7 @@ namespace horst {
         port_properties &p = m_plugin->m_port_properties[index];
         if (p.m_is_control && p.m_is_input) {
           m_atomic_port_values[index] = p.m_default_value;
+          m_port_values[index] = p.m_default_value;
         }
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
           if (p.m_is_input) {
