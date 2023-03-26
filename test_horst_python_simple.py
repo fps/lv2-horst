@@ -18,6 +18,12 @@ h.connect([
   (p._out_r, 'system:playback_2')])
 
 while True:
-  print(f'{p._meter_outL.value:.5f} {p._meter_outR.value:.5f}')
-  time.sleep(0.1)
+  p.set_enabled(True)
+  for n in range(30):
+    print(f'{p._meter_outL.value:.5f} {p._meter_outR.value:.5f}')
+    time.sleep(0.1)
+  p.set_enabled(False)
+  for n in range(30):
+    print(f'{p._meter_outL.value:.5f} {p._meter_outR.value:.5f}')
+    time.sleep(0.1)
 
