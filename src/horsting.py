@@ -25,6 +25,9 @@ class props:
   def __getattr__(self, name):
     return getattr(self.p, name)
 
+  def __dir__(self):
+    return list(self.__dict__.keys()) + dir(self.p)
+
   def get_value(self):
     return self.unit().unit.get_control_port_value(self.p.index)
 
@@ -57,6 +60,9 @@ class unit:
 
   def __getattr__(self, name):
     return getattr(self.unit, name)
+
+  def __dir__(self):
+    return list(self.__dict__.keys()) + dir(self.unit)
 
   def bind_midi(self, port_index, channel, cc, factor = 1.0, offset = 0.0):
     b = horst.midi_binding(True, channel, cc, factor, offset)
