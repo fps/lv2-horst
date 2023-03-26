@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <horst/horst.h>
 
 namespace bp = pybind11;
@@ -52,6 +53,7 @@ PYBIND11_MODULE(horst, m)
     .def (bp::init<> ())
     .def ("lv2", &horst::horst::lv2)
     .def ("lv2_internal", &horst::horst::lv2_internal)
+    .def ("lv2_uris", &horst::horst::lv2_uris)
     .def ("connect", &horst::horst::connect)
   ;
 }

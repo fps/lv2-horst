@@ -96,6 +96,16 @@ namespace horst {
 
     }
 
+    std::vector<std::string> lv2_uris () {
+			std::vector<std::string> uris;
+      LILV_FOREACH (plugins, i, m_lilv_plugins->m) {
+        const LilvPlugin* p = lilv_plugins_get(m_lilv_plugins->m, i);
+        uris.push_back(lilv_node_as_uri(lilv_plugin_get_uri(p)));
+      }
+
+      return uris;
+    }
+
     unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       return unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports));
     }
