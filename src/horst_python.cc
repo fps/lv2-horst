@@ -53,7 +53,7 @@ PYBIND11_MODULE(horst, m)
     .def (bp::init<> ())
     .def ("lv2", &horst::horst::lv2)
     .def ("lv2_internal", &horst::horst::lv2_internal)
-    .def ("lv2_uris", &horst::horst::lv2_uris)
+    .def ("lv2_plugin_uris", &horst::horst::lv2_uris)
     .def ("connect", &horst::horst::connect)
   ;
 }

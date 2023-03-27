@@ -8,14 +8,15 @@ from horst import connection
 import weakref
 import subprocess
 import re
+from collections import namedtuple
 
-h = horst.horst()
+the_horst = horst.horst()
 
 def string_to_identifier(varStr): return re.sub('\W|^(?=\d)','_', varStr)
 
 class uris_info:
   def __init__(self):
-    self.uris = h.lv2_uris()
+    self.uris = the_horst.lv2_uris()
     self.identifiers = list(map(string_to_identifier, self.uris))
     self.identifiers_to_uris = {}
     for uri in self.uris:
@@ -62,8 +63,11 @@ class props:
 
   def unbind_midi(self, *args):
     self.unit().unbind_midi(self.p.index, *args)
-  
-class unit:
+
+class with_ports:
+  pass
+
+class unit(with_ports):
   def __init__(self, unit, jack_client_name, expose_control_ports):
     self.unit = unit
     self.jack_client_name = jack_client_name
@@ -85,10 +89,10 @@ class unit:
       if p.is_audio:
         self.audio_ports.props[audio_port_index] = p
         audio_port_index += 1
-        if p.is_input:
+        if p.is_input and not p.is_side_chain:
           self.audio_input_ports.props[audio_input_port_index] = p
           audio_input_port_index += 1
-        if p.is_output:
+        if p.is_output and not p.is_side_chain:
           self.audio_output_ports.props[audio_output_port_index] = p
           audio_output_port_index += 1
 
@@ -111,39 +115,45 @@ class lv2(unit):
     if uri in lv2.blacklisted_uris:
       raise RuntimeError("blacklisted uri: " + uri)
     jack_client_name = uri if jack_client_name == "" else jack_client_name
-    unit.__init__ (self, h.lv2 (uri, jack_client_name, expose_control_ports), jack_client_name, expose_control_ports)
+    unit.__init__ (self, the_horst.lv2 (uri, jack_client_name, expose_control_ports), jack_client_name, expose_control_ports)
 
   blacklisted_uris = [
     'http://github.com/blablack/ams-lv2/fftvocoder'
   ]
 
+class system_ports(with_ports):
+  def __init__(self):
+    self.audio_input_ports = [namedtuple('foo', 'jack_name', defaults=["system:playback_" + str(n)])() for n in range(1,256)]
+    self.audio_output_ports = [namedtuple('foo', 'jack_name', defaults=["system:capture_" + str(n)])() for n in range(1,256)]
+
+system = system_ports()
+
 def chain(*args):
   connections = []
   for index in range(1, len(args)):
-    print(f"connect {args[index-1]} -> {args[index]}")
+    # print(f"connect {args[index-1]} -> {args[index]}")
     connections.append((args[index-1], args[index]))
   connect(connections)
-  return args
 
 def connect(connections):
   if type(connections) is horst.connections:
-    h.connect(connections)
+    the_horst.connect(connections)
     return
   cs = horst.connections() 
   for connection in connections:
     if type(connection) is horst.connection:
       cs.add(connection)
       continue
- 
+
     source = connection[0]
     sink = connection[1]
-    if type(source) is props and type(sink) is props:
+    if isinstance(source, props) and isinstance(sink, props):
       source = source.jack_name
       sink = sink.jack_name
       cs.add(source, sink)
-    if type(source) is lv2 and type(sink) is lv2:
+    if isinstance(source, with_ports) and isinstance(sink, with_ports):
       for n in range(0, min(len(source.audio_output_ports), len(sink.audio_input_ports))):
-        print((source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name))
+        # print((source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name))
         cs.add(source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name)
-  h.connect(cs)
-    
+  the_horst.connect(cs)
+
