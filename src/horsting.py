@@ -12,9 +12,11 @@ h = horst.horst()
 
 class ports:
   def __init__(self):
-    self.props = []
+    self.props = {}
   def __getitem__(self, index):
     return self.props[index]
+  def __len__(self):
+    return len(self.props)
 
 class props:
   def __init__(self, unit, index):
@@ -47,16 +49,30 @@ class unit:
   def __init__(self, unit, jack_client_name, expose_control_ports):
     self.unit = unit
     self.jack_client_name = jack_client_name
-    self.port_indices = {}
-    self.port_properties = {}
     self.ports = ports()
+    self.audio_ports = ports()
+    self.audio_input_ports = ports()
+    self.audio_output_ports = ports()
+    self.control_ports = ports()
+    self.cv_ports = ports()
+    audio_port_index = 0
+    audio_input_port_index = 0
+    audio_output_port_index = 0
     for index in range (self.unit.get_number_of_ports ()):
       p = props (self, index)
       p.jack_name = self.jack_client_name + ":" + p.name
       setattr(self, '_' + p.name, p)
-      self.port_properties[index] = p
-      self.port_properties[p.name] = p
-      self.ports.props.append(p)      
+      self.ports.props[index] = p
+      self.ports.props[p.name] = p
+      if p.is_audio:
+        self.audio_ports.props[audio_port_index] = p
+        audio_port_index += 1
+        if p.is_input:
+          self.audio_input_ports.props[audio_input_port_index] = p
+          audio_input_port_index += 1
+        if p.is_output:
+          self.audio_output_ports.props[audio_output_port_index] = p
+          audio_output_port_index += 1
 
   def __getattr__(self, name):
     return getattr(self.unit, name)
@@ -84,11 +100,18 @@ class lv2(unit):
     'http://github.com/blablack/ams-lv2/fftvocoder'
   ]
 
+def chain(*args):
+  connections = []
+  for index in range(1, len(args)):
+    print(f"connect {args[index-1]} -> {args[index]}")
+    connections.append((args[index-1], args[index]))
+  connect(connections)
+  return args
+
 def connect(connections):
   if type(connections) is horst.connections:
     h.connect(connections)
     return
-  # h.connect(connections)
   cs = horst.connections() 
   for connection in connections:
     if type(connection) is horst.connection:
@@ -97,10 +120,13 @@ def connect(connections):
  
     source = connection[0]
     sink = connection[1]
-    if type(source) is props:
+    if type(source) is props and type(sink) is props:
       source = source.jack_name
-    if type(sink) is props:
       sink = sink.jack_name
-    cs.add(source, sink)
+      cs.add(source, sink)
+    if type(source) is lv2 and type(sink) is lv2:
+      for n in range(0, min(len(source.audio_output_ports), len(sink.audio_input_ports))):
+        print((source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name))
+        cs.add(source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name)
   h.connect(cs)
     
