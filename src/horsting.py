@@ -7,8 +7,27 @@ from horst import connection
 
 import weakref
 import subprocess
+import re
 
 h = horst.horst()
+
+def string_to_identifier(varStr): return re.sub('\W|^(?=\d)','_', varStr)
+
+class uris_info:
+  def __init__(self):
+    self.uris = h.lv2_uris()
+    self.identifiers = list(map(string_to_identifier, self.uris))
+    self.identifiers_to_uris = {}
+    for uri in self.uris:
+      self.identifiers_to_uris[string_to_identifier(uri)] = uri
+  def __dir__(self):
+    return list(self.__dict__.keys()) + self.identifiers
+
+  def __getattr__(self, name):
+    if self.identifiers_to_uris[name]:
+      return self.identifiers_to_uris[name]
+
+uris = uris_info()
 
 class ports:
   def __init__(self):
@@ -44,7 +63,6 @@ class props:
   def unbind_midi(self, *args):
     self.unit().unbind_midi(self.p.index, *args)
   
-
 class unit:
   def __init__(self, unit, jack_client_name, expose_control_ports):
     self.unit = unit
@@ -95,7 +113,6 @@ class lv2(unit):
     jack_client_name = uri if jack_client_name == "" else jack_client_name
     unit.__init__ (self, h.lv2 (uri, jack_client_name, expose_control_ports), jack_client_name, expose_control_ports)
 
-  uris = subprocess.check_output(['lv2ls']).decode('utf-8').split('\n')
   blacklisted_uris = [
     'http://github.com/blablack/ams-lv2/fftvocoder'
   ]
