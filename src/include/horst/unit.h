@@ -43,6 +43,10 @@ namespace horst {
 
     }
 
+    virtual std::string get_jack_client_name () {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
+
     virtual void set_control_port_value (size_t index, float value) {
       throw std::runtime_error ("horst: unit: not implemented yet");
     }
@@ -192,6 +196,10 @@ namespace horst {
       if (ret != 0) {
         throw std::runtime_error ("horst: plugin_unit: Failed to activate client");
       }
+    }
+
+    std::string get_jack_client_name () override {
+      return jack_get_client_name (m_jack_client);
     }
 
     virtual ~plugin_unit () {

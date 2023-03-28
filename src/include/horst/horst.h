@@ -96,8 +96,8 @@ namespace horst {
 
     }
 
-    std::vector<std::string> lv2_plugin_uris () {
-			std::vector<std::string> uris;
+    std::vector<std::string> lv2_uris () {
+      std::vector<std::string> uris;
       LILV_FOREACH (plugins, i, m_lilv_plugins->m) {
         const LilvPlugin* p = lilv_plugins_get(m_lilv_plugins->m, i);
         uris.push_back(lilv_node_as_uri(lilv_plugin_get_uri(p)));

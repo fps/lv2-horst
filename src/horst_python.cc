@@ -47,13 +47,14 @@ PYBIND11_MODULE(horst, m)
     .def ("get_number_of_ports", &horst::unit::get_number_of_ports)
     .def ("get_port_properties", &horst::unit::get_port_properties)
     .def ("set_enabled", &horst::unit::set_enabled)
+    .def ("get_jack_client_name", &horst::unit::get_jack_client_name)
   ;
 
   bp::class_<horst::horst, horst::horst_ptr> (m, "horst")
     .def (bp::init<> ())
     .def ("lv2", &horst::horst::lv2)
     .def ("lv2_internal", &horst::horst::lv2_internal)
-    .def ("lv2_plugin_uris", &horst::horst::lv2_uris)
+    .def ("lv2_uris", &horst::horst::lv2_uris)
     .def ("connect", &horst::horst::connect)
   ;
 }

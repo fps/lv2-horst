@@ -73,9 +73,9 @@ class dict_with_attributes:
     return len(self.__d)
 
 class unit(with_ports):
-  def __init__(self, unit, jack_client_name, expose_control_ports):
+  def __init__(self, unit, expose_control_ports):
     self.unit = unit
-    self.jack_client_name = jack_client_name
+    self.jack_client_name = self.unit.get_jack_client_name()
 
     self.ports = dict_with_attributes()
 
@@ -145,8 +145,7 @@ class lv2(unit):
   def __init__(self, uri, jack_client_name = "", expose_control_ports = False):
     if uri in lv2.blacklisted_uris:
       raise RuntimeError("blacklisted uri: " + uri)
-    jack_client_name = uri if jack_client_name == "" else jack_client_name
-    unit.__init__ (self, the_horst.lv2 (uri, jack_client_name, expose_control_ports), jack_client_name, expose_control_ports)
+    unit.__init__ (self, the_horst.lv2 (uri, jack_client_name, expose_control_ports), expose_control_ports)
 
   blacklisted_uris = [
     'http://github.com/blablack/ams-lv2/fftvocoder'
