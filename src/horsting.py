@@ -106,22 +106,22 @@ class unit(with_ports):
     for index in range (self.unit.get_number_of_ports ()):
       p = props (self, index)
       p.jack_name = self.jack_client_name + ":" + p.name
-      setattr(self, '_' + p.name, p)
+      setattr(self, p.name + '_', p)
       self.ports[index] = p
 
       if p.is_audio and not p.is_side_chain:
         self.audio[audio_port_index] = p
-        setattr(self.audio, '_'+p.name, p)
+        setattr(self.audio, p.name + '_', p)
         audio_port_index += 1
 
         if p.is_input:
           self.audio_in[audio_in_port_index] = p
-          setattr(self.audio_in, '_'+p.name, p)
+          setattr(self.audio_in, p.name + '_', p)
           audio_in_port_index += 1
           
         if p.is_output:
           self.audio_out[audio_out_port_index] = p
-          setattr(self.audio_out, '_'+p.name, p)
+          setattr(self.audio_out, p.name + '_', p)
           audio_out_port_index += 1
 
   def __getitem__(self, index):

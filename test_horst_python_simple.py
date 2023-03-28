@@ -5,11 +5,11 @@ uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 
 p = h.lv2(uri)
 
-p._feedback.value = 0.9
-p._amount.value = 1
-p._medium.value = 2
+p.feedback_.value = 0.9
+p.amount_.value = 1
+p.medium_.value = 2
 
-p._feedback.bind_midi(0, 0)
+p.feedback_.bind_midi(0, 0)
 
 # h.connect([
 #   ('system:capture_1', p._in_l),
@@ -21,7 +21,7 @@ p._feedback.bind_midi(0, 0)
 h.connect(h.system, p, h.system)
 
 while True:
-    print(f'{p._meter_outL.value:.5f} {p._meter_outR.value:.5f}')
+    print(f'{p.meter_outL_.value:.5f} {p.meter_outR_.value:.5f}')
     time.sleep(0.1)
   
 # while True:
