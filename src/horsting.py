@@ -159,44 +159,6 @@ class system_ports(with_ports):
 
 system = system_ports()
 
-def chain(*args):
-  connections = []
-  for index in range(1, len(args)):
-    print(f"connect {args[index-1]} -> {args[index]}")
-    connections.append((args[index-1], args[index]))
-  connect(connections)
-
-# def connect(source, sink):
-#   pass
-#
-# def connect(connections):
-#   if isinstance(connections, horst.connections):
-#     the_horst.connect(connections)
-#     return
-#
-#   cs = horst.connections()
-#   for connection in connections:
-#     if isinstance(connection, horst.connection):
-#       cs.add(connection)
-#     else:
-#       cs.add(connect(connection[0], connection[1]))
-#
-#
-#     source = connection[0]
-#     sink = connection[1]
-#     if isinstance(source, props):
-#       source = source.jack_name
-#     if isinstance(sink, props):
-#       sink = sink.jack_name
-#     cs.add(source, sink)
-#     continue
-#
-#     if isinstance(source, with_ports) and isinstance(sink, with_ports):
-#       for n in range(0, min(len(source.audio_output_ports), len(sink.audio_input_ports))):
-#         print((source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name))
-#         cs.add(source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name)
-#   the_horst.connect(cs)
-
 def connect2(source, sink):
   print('connect2: ' + str(source) + ' ' + str(sink))
   if isinstance(source, with_ports) and isinstance(sink, with_ports):
