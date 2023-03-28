@@ -229,7 +229,9 @@ def connect(*args):
     cs = connect1(*args)
   if len(args) == 2:
     cs = connect2(*args)
-
+  if len(args) > 2:
+    for n in range(1,len(args)):
+      cs = cs + connect2(args[n-1], args[n])
   print('final connections: ' + str(cs))
 
   hcs = horst.connections()
