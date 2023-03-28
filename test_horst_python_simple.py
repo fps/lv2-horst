@@ -17,7 +17,8 @@ p._feedback.bind_midi(0, 0)
 #   (p._out_l, 'system:playback_1'),
 #   (p._out_r, 'system:playback_2')])
 
-h.connect([(h.system, p), (p, h.system)])
+# h.connect([(h.system, p), (p, h.system)])
+h.connect(h.system, p, h.system)
 
 while True:
     print(f'{p._meter_outL.value:.5f} {p._meter_outR.value:.5f}')
