@@ -30,14 +30,6 @@ class uris_info:
 
 uris = uris_info()
 
-class ports:
-  def __init__(self):
-    self.props = {}
-  def __getitem__(self, index):
-    return self.props[index]
-  def __len__(self):
-    return len(self.props)
-
 class props:
   def __init__(self, unit, index):
     self.unit = weakref.ref(unit)
@@ -67,34 +59,77 @@ class props:
 class with_ports:
   pass
 
+class dict_with_attributes:
+  def __init__(self):
+    self.__d = {}
+
+  def __getitem__(self, name):
+    return self.__d[name]
+
+  def __setitem__(self, name, value):
+    self.__d[name] = value
+
+  def __len__(self):
+    return len(self.__d)
+
 class unit(with_ports):
   def __init__(self, unit, jack_client_name, expose_control_ports):
     self.unit = unit
     self.jack_client_name = jack_client_name
-    self.ports = ports()
-    self.audio_ports = ports()
-    self.audio_input_ports = ports()
-    self.audio_output_ports = ports()
-    self.control_ports = ports()
-    self.cv_ports = ports()
+
+    self.ports = dict_with_attributes()
+
+    self.audio = dict_with_attributes()
+    self.audio_in = dict_with_attributes()
+    self.audio_out = dict_with_attributes()
+
+    self.side_chain = dict_with_attributes()
+    self.side_chain_in = dict_with_attributes()
+    self.side_Chain_out = dict_with_attributes()
+
+    self.control = dict_with_attributes()
+    self.control_in = dict_with_attributes()
+    self.control_out = dict_with_attributes()
+
+    self.cv = dict_with_attributes()
+    self.cv_in = dict_with_attributes()
+    self.cv_out = dict_with_attributes()
+
     audio_port_index = 0
-    audio_input_port_index = 0
-    audio_output_port_index = 0
+    audio_in_port_index = 0
+    audio_out_port_index = 0
+    
+    side_chain_port_index = 0
+    side_chain_in_port_index = 0
+    side_chain_out_port_index = 0
+
     for index in range (self.unit.get_number_of_ports ()):
       p = props (self, index)
       p.jack_name = self.jack_client_name + ":" + p.name
       setattr(self, '_' + p.name, p)
-      self.ports.props[index] = p
-      self.ports.props[p.name] = p
-      if p.is_audio:
-        self.audio_ports.props[audio_port_index] = p
+      self.ports[index] = p
+      self.ports[p.name] = p
+
+      if p.is_audio and not p.is_side_chain:
+        self.audio[audio_port_index] = p
+        self.audio[p.name] = p
+        setattr(self.audio, '_'+p.name, p)
         audio_port_index += 1
-        if p.is_input and not p.is_side_chain:
-          self.audio_input_ports.props[audio_input_port_index] = p
-          audio_input_port_index += 1
-        if p.is_output and not p.is_side_chain:
-          self.audio_output_ports.props[audio_output_port_index] = p
-          audio_output_port_index += 1
+
+        if p.is_input:
+          self.audio_in[audio_in_port_index] = p
+          self.audio_in[p.name] = p
+          setattr(self.audio_in, '_'+p.name, p)
+          audio_in_port_index += 1
+          
+        if p.is_output:
+          self.audio_out[audio_out_port_index] = p
+          self.audio_out[p.name] = p
+          setattr(self.audio_out, '_'+p.name, p)
+          audio_out_port_index += 1
+
+  def __getitem__(self, index):
+    return self.ports[index]
 
   def __getattr__(self, name):
     return getattr(self.unit, name)
