@@ -108,23 +108,19 @@ class unit(with_ports):
       p.jack_name = self.jack_client_name + ":" + p.name
       setattr(self, '_' + p.name, p)
       self.ports[index] = p
-      self.ports[p.name] = p
 
       if p.is_audio and not p.is_side_chain:
         self.audio[audio_port_index] = p
-        self.audio[p.name] = p
         setattr(self.audio, '_'+p.name, p)
         audio_port_index += 1
 
         if p.is_input:
           self.audio_in[audio_in_port_index] = p
-          self.audio_in[p.name] = p
           setattr(self.audio_in, '_'+p.name, p)
           audio_in_port_index += 1
           
         if p.is_output:
           self.audio_out[audio_out_port_index] = p
-          self.audio_out[p.name] = p
           setattr(self.audio_out, '_'+p.name, p)
           audio_out_port_index += 1
 
@@ -158,37 +154,85 @@ class lv2(unit):
 
 class system_ports(with_ports):
   def __init__(self):
-    self.audio_input_ports = [namedtuple('foo', 'jack_name', defaults=["system:playback_" + str(n)])() for n in range(1,256)]
-    self.audio_output_ports = [namedtuple('foo', 'jack_name', defaults=["system:capture_" + str(n)])() for n in range(1,256)]
+    self.audio_in = [namedtuple('foo', 'jack_name', defaults=["system:playback_" + str(n)])() for n in range(1,256)]
+    self.audio_out = [namedtuple('foo', 'jack_name', defaults=["system:capture_" + str(n)])() for n in range(1,256)]
 
 system = system_ports()
 
 def chain(*args):
   connections = []
   for index in range(1, len(args)):
-    # print(f"connect {args[index-1]} -> {args[index]}")
+    print(f"connect {args[index-1]} -> {args[index]}")
     connections.append((args[index-1], args[index]))
   connect(connections)
 
-def connect(connections):
-  if type(connections) is horst.connections:
-    the_horst.connect(connections)
-    return
-  cs = horst.connections() 
-  for connection in connections:
-    if type(connection) is horst.connection:
-      cs.add(connection)
-      continue
+# def connect(source, sink):
+#   pass
+#
+# def connect(connections):
+#   if isinstance(connections, horst.connections):
+#     the_horst.connect(connections)
+#     return
+#
+#   cs = horst.connections()
+#   for connection in connections:
+#     if isinstance(connection, horst.connection):
+#       cs.add(connection)
+#     else:
+#       cs.add(connect(connection[0], connection[1]))
+#
+#
+#     source = connection[0]
+#     sink = connection[1]
+#     if isinstance(source, props):
+#       source = source.jack_name
+#     if isinstance(sink, props):
+#       sink = sink.jack_name
+#     cs.add(source, sink)
+#     continue
+#
+#     if isinstance(source, with_ports) and isinstance(sink, with_ports):
+#       for n in range(0, min(len(source.audio_output_ports), len(sink.audio_input_ports))):
+#         print((source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name))
+#         cs.add(source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name)
+#   the_horst.connect(cs)
 
-    source = connection[0]
-    sink = connection[1]
-    if isinstance(source, props) and isinstance(sink, props):
-      source = source.jack_name
-      sink = sink.jack_name
-      cs.add(source, sink)
-    if isinstance(source, with_ports) and isinstance(sink, with_ports):
-      for n in range(0, min(len(source.audio_output_ports), len(sink.audio_input_ports))):
-        # print((source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name))
-        cs.add(source.audio_output_ports[n].jack_name, sink.audio_input_ports[n].jack_name)
-  the_horst.connect(cs)
+def connect2(source, sink):
+  print('connect2: ' + str(source) + ' ' + str(sink))
+  if isinstance(source, with_ports) and isinstance(sink, with_ports):
+    count = min(len(source.audio_out), len(sink.audio_in))
+    print(count)
+    return [(source.audio_out[n].jack_name, sink.audio_in[n].jack_name) for n in range(count)]
+  if isinstance(source, with_ports):
+    return [connect2(source.audio_out[n].jack_name, sink) for n in range(len(source.audio_out))]
+  if isinstance(sink, with_ports):
+    return [connect2(source, sink.audio_in[n].jack_name) for n in range(len(sink.audio_in))]
+  if isinstance(sink, props):
+    return connect2(source, sink.jack_name)
+  if isinstance(source, props):
+    return connect2(source.jack_name, sink)
+  print('base: ' + str(source) + ' ' + str(sink))
+  return [(source, sink)]
 
+def connect1(l):
+  r = []
+  print('connect1: ' + str(l))
+  cs = horst.connections()
+  for c in l:
+    r = r + connect2(c[0], c[1])
+  return r
+
+def connect(*args):
+  print('connect: ' + str(args))
+  cs = []
+  if len(args) == 1:
+    cs = connect1(*args)
+  if len(args) == 2:
+    cs = connect2(*args)
+
+  print('final connections: ' + str(cs))
+
+  hcs = horst.connections()
+  for c in cs:
+    hcs.add(c[0], c[1])
+  the_horst.connect(hcs)
