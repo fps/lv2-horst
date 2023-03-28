@@ -149,7 +149,7 @@ namespace horst {
       std::string client_name = jack_client_name;
       if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
       if (m_jack_client == 0) {
-        m_jack_client = jack_client_open (client_name.c_str(), JackUseExactName, 0);
+        m_jack_client = jack_client_open (client_name.c_str(), JackNullOption, 0);
       }
       if (m_jack_client == 0) throw std::runtime_error ("horst: plugin_unit: Failed to open jack client. Name: " + jack_client_name);
 

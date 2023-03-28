@@ -159,10 +159,10 @@ class system_ports(with_ports):
 system = system_ports()
 
 def connect2(source, sink):
-  print('connect2: ' + str(source) + ' ' + str(sink))
+  # print('connect2: ' + str(source) + ' ' + str(sink))
   if isinstance(source, with_ports) and isinstance(sink, with_ports):
     count = min(len(source.audio_out), len(sink.audio_in))
-    print(count)
+    # print(count)
     return [(source.audio_out[n].jack_name, sink.audio_in[n].jack_name) for n in range(count)]
   if isinstance(source, with_ports):
     return [connect2(source.audio_out[n].jack_name, sink) for n in range(len(source.audio_out))]
@@ -172,19 +172,19 @@ def connect2(source, sink):
     return connect2(source, sink.jack_name)
   if isinstance(source, props):
     return connect2(source.jack_name, sink)
-  print('base: ' + str(source) + ' ' + str(sink))
+  # print('base: ' + str(source) + ' ' + str(sink))
   return [(source, sink)]
 
 def connect1(l):
   r = []
-  print('connect1: ' + str(l))
+  # print('connect1: ' + str(l))
   cs = horst.connections()
   for c in l:
     r = r + connect2(c[0], c[1])
   return r
 
 def connect(*args):
-  print('connect: ' + str(args))
+  # print('connect: ' + str(args))
   cs = []
   if len(args) == 1:
     cs = connect1(*args)
@@ -193,7 +193,7 @@ def connect(*args):
   if len(args) > 2:
     for n in range(1,len(args)):
       cs = cs + connect2(args[n-1], args[n])
-  print('final connections: ' + str(cs))
+  # print('final connections: ' + str(cs))
 
   hcs = horst.connections()
   for c in cs:
