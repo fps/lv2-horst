@@ -80,9 +80,9 @@ namespace horst {
       m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
       m_uri (uri),
       m_urid_map { .handle = (LV2_URID_Map_Handle)this, .map = horst::urid_map },
-      m_urid_map_feature { .URI = "http://lv2plug.in/ns/ext/urid#map", .data = &m_urid_map },
-      m_is_live_feature { .URI = "http://lv2plug.in/ns/lv2core#isLive", .data = 0 },
-      m_bounded_block_length_feature { .URI = "http://lv2plug.in/ns/ext/buf-size#boundedBlockLength", .data = 0 },
+      m_urid_map_feature { .URI = LV2_URID__map, .data = &m_urid_map },
+      m_is_live_feature { .URI = LV2_CORE__isLive, .data = 0 },
+      m_bounded_block_length_feature { .URI = LV2_BUF_SIZE__boundedBlockLength, .data = 0 },
       m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] }
     {
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_ATOM__Int), .value = 0 });
