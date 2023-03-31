@@ -1,0 +1,1 @@
+valgrind --trace-children=yes $*
