@@ -1,7 +1,5 @@
 #pragma once
 
-#include <lilv/lilv.h>
-
 namespace horst {
 
   struct lilv_world {
@@ -72,8 +70,8 @@ namespace horst {
 
     std::vector<std::vector<float>> m_initial_port_buffers;
 
-    lilv_plugin_instance (lilv_plugin_ptr plugin, double sample_rate) :
-      m (lilv_plugin_instantiate (plugin->m, sample_rate, 0)),
+    lilv_plugin_instance (lilv_plugin_ptr plugin, double sample_rate, LV2_Feature *const *supported_features) :
+      m (lilv_plugin_instantiate (plugin->m, sample_rate, supported_features)),
       m_plugin (plugin)
     {
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin_instance: Failed to instantiate plugin");

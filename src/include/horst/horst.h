@@ -15,6 +15,10 @@
 #include <jack/intclient.h>
 #include <jack/midiport.h>
 
+#include <lilv/lilv.h>
+#include <lv2/options/options.h>
+#include <lv2/buf-size/buf-size.h>
+
 #include <horst/unit.h>
 
 #include <dlfcn.h>
@@ -110,6 +114,7 @@ namespace horst {
       return unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports));
     }
 
+    /*
     unit_ptr lv2_internal (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
       jack_status_t jack_status;
       // jack_client_t *jack_client = jack_client_open ("horst-loader", JackNullOption, 0);
@@ -131,7 +136,7 @@ namespace horst {
       // jack_client_close (jack_client);
       return unit_ptr (new internal_plugin_unit (m_jack_client, jack_intclient));
     }
-  
+    */
     unit_ptr ladspa (std::string library_file_name, std::string plugin_label) {
       return unit_ptr ();  
     }

@@ -23,7 +23,7 @@ namespace horst {
 
     virtual const std::string &get_name () const = 0;
 
-    virtual void instantiate (double sample_rate) = 0;
+    virtual void instantiate (double sample_rate, size_t buffer_size) = 0;
 
     virtual void connect_port (size_t index, float *data) = 0;
 
@@ -53,6 +53,10 @@ namespace horst {
 
   };
 
+  extern "C" {
+    LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri);
+  }
+
   struct lv2_plugin : public plugin_base {
     lilv_uri_node_ptr m_lilv_plugin_uri;
     lilv_plugin_ptr m_lilv_plugin;
@@ -62,11 +66,66 @@ namespace horst {
     const std::string m_uri;
     std::string m_name;
 
+    std::vector<LV2_Options_Option> m_options;
+
+    LV2_URID_Map m_urid_map;
+    LV2_Feature m_urid_map_feature;
+    LV2_Feature m_is_live_feature;
+    LV2_Feature m_bounded_block_length_feature;
+    LV2_Feature m_options_feature;
+    std::vector<LV2_Feature*> m_supported_features;
+
     lv2_plugin (lilv_world_ptr world, lilv_plugins_ptr plugins, const std::string &uri) :
       m_lilv_plugin_uri (new lilv_uri_node (world, uri)),
       m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
-      m_uri (uri)
+      m_uri (uri),
+      m_urid_map { .handle = (LV2_URID_Map_Handle)this, .map = horst::urid_map },
+      m_urid_map_feature { .URI = "http://lv2plug.in/ns/ext/urid#map", .data = &m_urid_map },
+      m_is_live_feature { .URI = "http://lv2plug.in/ns/lv2core#isLive", .data = 0 },
+      m_bounded_block_length_feature { .URI = "http://lv2plug.in/ns/ext/buf-size#boundedBlockLength", .data = 0 },
+      m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] }
     {
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_CORE__integer), .value = 0 });
+
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_CORE__integer), .value = 0 });
+
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = 0, .size = 0, .type = 0, .value = 0 });
+
+      m_supported_features.push_back (&m_urid_map_feature);
+      m_supported_features.push_back (&m_is_live_feature);
+      m_supported_features.push_back (&m_bounded_block_length_feature);
+      m_supported_features.push_back (&m_options_feature);
+      m_supported_features.push_back (0);
+
+      LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
+      if (features != 0) {
+        std::stringstream s;
+        LILV_FOREACH(nodes, i, features) {
+          const LilvNode *node = lilv_nodes_get (features, i);
+          std::string feature_uri =  lilv_node_as_uri (node);
+          bool supported = false;
+          for (size_t feature_index = 0; feature_index < m_supported_features.size () - 1; ++feature_index) {
+            if (m_supported_features[feature_index]->URI == feature_uri) {
+              supported = true;
+              break;
+            }
+          }
+          if (!supported) {
+            lilv_nodes_free (features);
+            throw std::runtime_error ("horst: lv2_plugin: Unsupported feature: " + feature_uri);
+          }
+        }
+        lilv_nodes_free (features);
+      }
+
+      lilv_uri_node required_options_uri (world, "http://lv2plug.in/ns/ext/options#requiredOption");
+      LilvNodes *required_options = lilv_plugin_get_value (m_lilv_plugin->m, required_options_uri.m);
+      LILV_FOREACH (nodes, i, required_options) {
+        const LilvNode *node = lilv_nodes_get (required_options, i);
+        std::cout << "Required options: " << lilv_node_as_string (node) << "\n";
+      }
+      lilv_nodes_free (required_options);
+
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
       lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
@@ -110,22 +169,18 @@ namespace horst {
       m_name = lilv_node_as_string (name_node);
       lilv_node_free (name_node);
 
-      LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
-      if (features != 0) {
-        std::stringstream s;
-        LILV_FOREACH(nodes, i, features) {
-          const LilvNode *node = lilv_nodes_get (features, i);
-          s << " " << lilv_node_as_uri (node);
-        }
-        lilv_nodes_free (features);
-        throw std::runtime_error (std::string ("horst: lv2_plugin: Unsupported features:" + s.str()));
-      }
     }
 
     virtual const std::string &get_name () const { return m_name; }
 
-    virtual void instantiate (double sample_rate) {
-      m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate));
+    virtual void instantiate (double sample_rate, size_t buffer_size) {
+      // std::cout << "instantiate () " << sample_rate << " " << buffer_size << "\n";
+      int max_buffer_size = (int)buffer_size;
+      m_options[0].value = &max_buffer_size;
+      int min_buffer_size = 0;
+      m_options[1].value = &min_buffer_size;
+
+      m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
     }
 
     virtual void connect_port (size_t port_index, float *data) override {
@@ -135,7 +190,26 @@ namespace horst {
     virtual void run (size_t nframes) override {
       lilv_instance_run (m_plugin_instance->m, nframes);
     }
+
+    std::vector<std::string> m_mapped_uris;
+
+    LV2_URID urid_map (const char *uri) {
+      auto it = std::find (m_mapped_uris.begin (), m_mapped_uris.end (), uri);
+      LV2_URID urid = it - m_mapped_uris.begin ();
+      if (it == m_mapped_uris.end ()) {
+        m_mapped_uris.push_back (uri);
+      }
+
+      // std::cout << "URI: " << uri << " -> " << urid << "\n";
+      return urid;
+    }
   };
+
+  extern "C" {
+    LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri) {
+      return ((lv2_plugin*)handle)->urid_map(uri);
+    }
+  }
 
 
   typedef std::shared_ptr<lv2_plugin> lv2_plugin_ptr;

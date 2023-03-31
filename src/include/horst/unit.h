@@ -133,6 +133,10 @@ namespace horst {
 
     plugin_ptr m_plugin;
 
+    jack_nframes_t m_sample_rate;
+    bool m_sample_rate_set;
+    jack_nframes_t m_buffer_size;
+
     plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, jack_client_t *jack_client, bool expose_control_ports) :
       jack_unit (expose_control_ports),
       m_internal_client (jack_client != 0),
@@ -144,7 +148,8 @@ namespace horst {
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
-      m_plugin (plugin)
+      m_plugin (plugin),
+      m_sample_rate_set (false)
     {
       std::string client_name = jack_client_name;
       if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
@@ -304,16 +309,21 @@ namespace horst {
     }
 
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
+      m_buffer_size = buffer_size;
       // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
       for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
         m_zero_buffers[port_index].resize (buffer_size, 0);
       }
+
+      m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
       return 0;
     }
 
     virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
+      m_sample_rate = sample_rate;
       // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
-      m_plugin->instantiate ((double)sample_rate);
+      if (!m_sample_rate_set) m_sample_rate_set = true;
+      else m_plugin->instantiate ((double)sample_rate, m_buffer_size);
       return 0;
     }
 
