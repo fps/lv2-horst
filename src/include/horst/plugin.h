@@ -85,11 +85,14 @@ namespace horst {
       m_bounded_block_length_feature { .URI = "http://lv2plug.in/ns/ext/buf-size#boundedBlockLength", .data = 0 },
       m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] }
     {
-      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_CORE__integer), .value = 0 });
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_ATOM__Int), .value = 0 });
 
-      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_CORE__integer), .value = 0 });
+
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__maxBlockLength), .size = sizeof (int), .type = urid_map (LV2_ATOM__Int), .value = 0 });
 
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = 0, .size = 0, .type = 0, .value = 0 });
+
+      m_options_feature.data = &m_options[0];
 
       m_supported_features.push_back (&m_urid_map_feature);
       m_supported_features.push_back (&m_is_live_feature);
@@ -175,10 +178,10 @@ namespace horst {
 
     virtual void instantiate (double sample_rate, size_t buffer_size) {
       // std::cout << "instantiate () " << sample_rate << " " << buffer_size << "\n";
-      int max_buffer_size = (int)buffer_size;
-      m_options[0].value = &max_buffer_size;
       int min_buffer_size = 0;
-      m_options[1].value = &min_buffer_size;
+      int max_buffer_size = (int)buffer_size;
+      m_options[0].value = &min_buffer_size;
+      m_options[1].value = &max_buffer_size;
 
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
     }

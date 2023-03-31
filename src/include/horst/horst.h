@@ -18,6 +18,7 @@
 #include <lilv/lilv.h>
 #include <lv2/options/options.h>
 #include <lv2/buf-size/buf-size.h>
+#include <lv2/atom/atom.h>
 
 #include <horst/unit.h>
 
