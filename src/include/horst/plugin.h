@@ -55,6 +55,8 @@ namespace horst {
 
   extern "C" {
     LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri);
+    LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
+    void *worker_thread (void *);
   }
 
   struct lv2_plugin : public plugin_base {
@@ -71,22 +73,37 @@ namespace horst {
 
     std::vector<LV2_Options_Option> m_options;
 
+    LV2_Worker_Schedule m_worker_schedule;
+    LV2_Worker_Interface *m_worker_interface;
+    std::vector<std::function<LV2_Worker_Status(int, void*)>> m_work_items;
+    std::atomic<size_t> m_work_items_head;
+    std::atomic<size_t> m_work_items_tail;
+    std::atomic<bool> m_worker_quit;
+    pthread_t m_worker_thread;
+
     LV2_URID_Map m_urid_map;
     LV2_Feature m_urid_map_feature;
     LV2_Feature m_is_live_feature;
     LV2_Feature m_bounded_block_length_feature;
     LV2_Feature m_options_feature;
+    LV2_Feature m_worker_feature;
     std::vector<LV2_Feature*> m_supported_features;
 
     lv2_plugin (lilv_world_ptr world, lilv_plugins_ptr plugins, const std::string &uri) :
       m_lilv_plugin_uri (new lilv_uri_node (world, uri)),
       m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
       m_uri (uri),
+      m_worker_schedule { this, horst::schedule_work },
+      m_worker_interface (0),
+      m_work_items_head (0),
+      m_work_items_tail (0),
+      m_worker_quit (false),
       m_urid_map { .handle = (LV2_URID_Map_Handle)this, .map = horst::urid_map },
       m_urid_map_feature { .URI = LV2_URID__map, .data = &m_urid_map },
       m_is_live_feature { .URI = LV2_CORE__isLive, .data = 0 },
       m_bounded_block_length_feature { .URI = LV2_BUF_SIZE__boundedBlockLength, .data = 0 },
-      m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] }
+      m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] },
+      m_worker_feature { .URI = LV2_WORKER__schedule, .data = &m_worker_schedule }
     {
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_min_block_length });
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__maxBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_max_block_length });
@@ -97,6 +114,7 @@ namespace horst {
       m_supported_features.push_back (&m_is_live_feature);
       m_supported_features.push_back (&m_options_feature);
       m_supported_features.push_back (&m_bounded_block_length_feature);
+      m_supported_features.push_back (&m_worker_feature);
       m_supported_features.push_back (0);
 
       LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
@@ -171,6 +189,8 @@ namespace horst {
       m_name = lilv_node_as_string (name_node);
       lilv_node_free (name_node);
 
+      int ret = pthread_create (&m_worker_thread, 0, horst::worker_thread, this);
+      if (ret != 0) throw std::runtime_error ("horst: lv2_plugin: Failed to create worker thread");
     }
 
     virtual const std::string &get_name () const { return m_name; }
@@ -181,6 +201,7 @@ namespace horst {
       m_max_block_length = (int32_t)buffer_size;
 
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
+      m_worker_interface = (LV2_Worker_Interface*)lilv_instance_get_extension_data (m_plugin_instance->m, LV2_WORKER__interface); 
     }
 
     virtual void connect_port (size_t port_index, float *data) override {
@@ -203,11 +224,39 @@ namespace horst {
       // std::cout << "URI: " << uri << " -> " << urid << "\n";
       return urid + 1;
     }
+
+    LV2_Worker_Status schedule_work (uint32_t size, const void *data) {
+      if (m_worker_interface) {
+        return m_worker_interface->work (m_plugin_instance->m, m_worker_interface->work_response, this, size, data);
+      }
+      return LV2_WORKER_ERR_UNKNOWN;
+    }
+
+    void *worker_thread () {
+      while (!m_worker_quit) {
+        // std::cout << "horst: lv2_plugin: worker_thread ()\n";
+        usleep (10000);
+      }
+      return 0;
+    }
+
+    ~lv2_plugin () {
+      m_worker_quit = true;
+      pthread_join (m_worker_thread, 0);
+    }
   };
 
   extern "C" {
     LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri) {
       return ((lv2_plugin*)handle)->urid_map(uri);
+    }
+
+    LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data) {
+      return  ((lv2_plugin*)handle)->schedule_work (size, data);
+    }
+
+    void *worker_thread (void *arg) {
+      return ((lv2_plugin*)arg)->worker_thread ();
     }
   }
 

@@ -13,8 +13,8 @@ OPTIMIZATION_FLAGS = -O3
 PYTHON_CXXFLAGS = `python3 -m pybind11 --includes` `python3-config --cflags`  
 PYTHON_LDFLAGS = `python3-config --ldflags --embed` 
 
-CXXFLAGS += $(OPTIMIZATION_FLAGS) -fPIC -std=c++20 -Isrc/include -march=native -mcpu=native -Wall -pedantic `pkg-config lilv-0 --cflags` `pkg-config lv2 --cflags`
-LDFLAGS += `pkg-config lilv-0 --libs` -ljack -latomic
+CXXFLAGS += $(OPTIMIZATION_FLAGS) -fPIC -std=c++20 -Isrc/include -march=native -mcpu=native -Wall -pedantic `pkg-config lilv-0 --cflags` `pkg-config lv2 --cflags` -pthread
+LDFLAGS += `pkg-config lilv-0 --libs` -ljack -latomic -pthread
 
 src/horst.so: src/horst_python.cc $(HORST_HEADERS)
 	g++ -shared -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)

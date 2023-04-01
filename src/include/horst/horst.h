@@ -19,11 +19,13 @@
 #include <lv2/options/options.h>
 #include <lv2/buf-size/buf-size.h>
 #include <lv2/atom/atom.h>
+#include <lv2/worker/worker.h>
 
 #include <horst/unit.h>
 
 #include <dlfcn.h>
 #include <time.h>
+#include <pthread.h>
 
 
 namespace horst {
