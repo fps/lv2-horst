@@ -57,6 +57,7 @@ namespace horst {
     LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri);
     LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     void *worker_thread (void *);
+    LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data);
   }
 
   struct lv2_plugin : public plugin_base {
@@ -74,10 +75,13 @@ namespace horst {
     std::vector<LV2_Options_Option> m_options;
 
     LV2_Worker_Schedule m_worker_schedule;
-    LV2_Worker_Interface *m_worker_interface;
-    std::vector<std::function<LV2_Worker_Status(int, void*)>> m_work_items;
+    std::atomic<LV2_Worker_Interface*> m_worker_interface;
+    std::vector<std::pair<unsigned, const void *>> m_work_items;
     std::atomic<size_t> m_work_items_head;
     std::atomic<size_t> m_work_items_tail;
+    std::vector<std::pair<unsigned, const void*>> m_work_responses;
+    std::atomic<size_t> m_work_responses_head;
+    std::atomic<size_t> m_work_responses_tail;
     std::atomic<bool> m_worker_quit;
     pthread_t m_worker_thread;
 
@@ -95,8 +99,12 @@ namespace horst {
       m_uri (uri),
       m_worker_schedule { this, horst::schedule_work },
       m_worker_interface (0),
+      m_work_items (1024),
       m_work_items_head (0),
       m_work_items_tail (0),
+      m_work_responses (1024),
+      m_work_responses_head (0),
+      m_work_responses_tail (0),
       m_worker_quit (false),
       m_urid_map { .handle = (LV2_URID_Map_Handle)this, .map = horst::urid_map },
       m_urid_map_feature { .URI = LV2_URID__map, .data = &m_urid_map },
@@ -202,6 +210,7 @@ namespace horst {
 
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
       m_worker_interface = (LV2_Worker_Interface*)lilv_instance_get_extension_data (m_plugin_instance->m, LV2_WORKER__interface); 
+      std::cout << "worker interface: " << m_worker_interface << " " << m_worker_interface.load () << "\n";
     }
 
     virtual void connect_port (size_t port_index, float *data) override {
@@ -210,6 +219,18 @@ namespace horst {
 
     virtual void run (size_t nframes) override {
       lilv_instance_run (m_plugin_instance->m, nframes);
+      LV2_Worker_Interface *interface = m_worker_interface;
+      if (interface) {
+        if (interface->end_run) {
+          interface->end_run (m_plugin_instance->m);
+        }
+
+        if (number_of_items (m_work_responses_head, m_work_responses_tail, m_work_responses.size ())) {
+          auto &item = m_work_responses[m_work_responses_tail];
+          if (interface->work_response) interface->work_response (m_plugin_instance->m, item.first, item.second);
+          advance (m_work_responses_tail, m_work_responses.size ());
+        }
+      }
     }
 
     std::vector<std::string> m_mapped_uris;
@@ -225,17 +246,53 @@ namespace horst {
       return urid + 1;
     }
 
+    int number_of_items (const int &head, const int &tail, const size_t &size) {
+      if (head >= tail) return head - tail;
+
+      return head + size - tail;
+    }
+
+    void advance (std::atomic<size_t> &item, const size_t &size) {
+      std::cout << "advance: " << item << "\n";
+      item++;
+      if (item >= size) item = 0;
+    }
+
     LV2_Worker_Status schedule_work (uint32_t size, const void *data) {
       if (m_worker_interface) {
-        return m_worker_interface->work (m_plugin_instance->m, m_worker_interface->work_response, this, size, data);
+        std::cout << "schedule_work\n";
+        m_work_items[m_work_items_head] = std::make_pair(size, data);
+        advance (m_work_items_head, m_work_items.size ());
+
+        return LV2_WORKER_SUCCESS; // m_worker_interface->work (m_plugin_instance->m, horst::worker_respond, this, size, data);
       }
       return LV2_WORKER_ERR_UNKNOWN;
     }
 
+    LV2_Worker_Status worker_respond (uint32_t size, const void *data) {
+      if (m_worker_interface) {
+        std::cout << "respond\n";
+        m_work_responses[m_work_responses_head] = std::make_pair(size, data);
+        advance (m_work_responses_head, m_work_responses.size ());
+      }
+      return LV2_WORKER_SUCCESS;
+    }
+
     void *worker_thread () {
       while (!m_worker_quit) {
+        // LV2_Worker_Interface *interface = m_worker_interface;
+        // std::cout << "m: " << m_worker_interface << " interface: " << interface << " number: " << number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) << "\n";
+        while (m_worker_interface && number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ())) {
+          std::cout << "getting to work\n";
+          auto &item = m_work_items[m_work_items_tail];
+          if (m_worker_interface.load ()->work) {
+            LV2_Worker_Status res = m_worker_interface.load ()->work (m_plugin_instance->m, &horst::worker_respond, this, item.first, item.second);
+            std::cout << "horst: lv2_plugin: worker_thread: res: " << res << "\n";
+          }
+          advance (m_work_items_tail, m_work_items.size ());
+        }
         // std::cout << "horst: lv2_plugin: worker_thread ()\n";
-        usleep (10000);
+        usleep (1000);
       }
       return 0;
     }
@@ -253,6 +310,10 @@ namespace horst {
 
     LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data) {
       return  ((lv2_plugin*)handle)->schedule_work (size, data);
+    }
+
+    LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data) {
+      return ((lv2_plugin*)handle)->worker_respond (size, data);
     }
 
     void *worker_thread (void *arg) {
