@@ -66,6 +66,9 @@ namespace horst {
     const std::string m_uri;
     std::string m_name;
 
+    uint32_t m_min_block_length;
+    uint32_t m_max_block_length;
+
     std::vector<LV2_Options_Option> m_options;
 
     LV2_URID_Map m_urid_map;
@@ -85,19 +88,15 @@ namespace horst {
       m_bounded_block_length_feature { .URI = LV2_BUF_SIZE__boundedBlockLength, .data = 0 },
       m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] }
     {
-      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int), .type = urid_map (LV2_ATOM__Int), .value = 0 });
-
-
-      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__maxBlockLength), .size = sizeof (int), .type = urid_map (LV2_ATOM__Int), .value = 0 });
-
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_min_block_length });
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__maxBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_max_block_length });
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = 0, .size = 0, .type = 0, .value = 0 });
-
       m_options_feature.data = &m_options[0];
 
       m_supported_features.push_back (&m_urid_map_feature);
       m_supported_features.push_back (&m_is_live_feature);
-      m_supported_features.push_back (&m_bounded_block_length_feature);
       m_supported_features.push_back (&m_options_feature);
+      m_supported_features.push_back (&m_bounded_block_length_feature);
       m_supported_features.push_back (0);
 
       LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
@@ -121,7 +120,7 @@ namespace horst {
         lilv_nodes_free (features);
       }
 
-      lilv_uri_node required_options_uri (world, "http://lv2plug.in/ns/ext/options#requiredOption");
+      lilv_uri_node required_options_uri (world, LV2_OPTIONS__requiredOption);
       LilvNodes *required_options = lilv_plugin_get_value (m_lilv_plugin->m, required_options_uri.m);
       LILV_FOREACH (nodes, i, required_options) {
         const LilvNode *node = lilv_nodes_get (required_options, i);
@@ -134,7 +133,7 @@ namespace horst {
       lilv_uri_node audio (world, LILV_URI_AUDIO_PORT);
       lilv_uri_node control (world, LILV_URI_CONTROL_PORT);
       lilv_uri_node cv (world, LILV_URI_CV_PORT);
-      lilv_uri_node side_chain (world, "http://lv2plug.in/ns/lv2core#isSideChain");
+      lilv_uri_node side_chain (world, "https://lv2plug.in/ns/lv2core#isSideChain");
 
       m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));
       for (size_t index = 0; index < m_port_properties.size(); ++index) {
@@ -178,10 +177,8 @@ namespace horst {
 
     virtual void instantiate (double sample_rate, size_t buffer_size) {
       // std::cout << "instantiate () " << sample_rate << " " << buffer_size << "\n";
-      int min_buffer_size = 0;
-      int max_buffer_size = (int)buffer_size;
-      m_options[0].value = &min_buffer_size;
-      m_options[1].value = &max_buffer_size;
+      m_min_block_length = 0;
+      m_max_block_length = (int32_t)buffer_size;
 
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
     }
@@ -204,7 +201,7 @@ namespace horst {
       }
 
       // std::cout << "URI: " << uri << " -> " << urid << "\n";
-      return urid;
+      return urid + 1;
     }
   };
 
