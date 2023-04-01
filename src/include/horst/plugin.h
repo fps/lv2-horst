@@ -97,7 +97,7 @@ namespace horst {
       m_lilv_plugin_uri (new lilv_uri_node (world, uri)),
       m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
       m_uri (uri),
-      m_worker_schedule { this, horst::schedule_work },
+      m_worker_schedule { (LV2_Worker_Schedule_Handle)this, horst::schedule_work },
       m_worker_interface (0),
       m_work_items (1024),
       m_work_items_head (0),
@@ -261,10 +261,12 @@ namespace horst {
     LV2_Worker_Status schedule_work (uint32_t size, const void *data) {
       if (m_worker_interface) {
         std::cout << "schedule_work\n";
-        m_work_items[m_work_items_head] = std::make_pair(size, data);
-        advance (m_work_items_head, m_work_items.size ());
-
-        return LV2_WORKER_SUCCESS; // m_worker_interface->work (m_plugin_instance->m, horst::worker_respond, this, size, data);
+        if (number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) < (int)m_work_items.size() - 1) {
+          m_work_items[m_work_items_head] = std::make_pair(size, data);
+          advance (m_work_items_head, m_work_items.size ());
+          return LV2_WORKER_SUCCESS; // m_worker_interface->work (m_plugin_instance->m, horst::worker_respond, this, size, data);
+        }
+        return LV2_WORKER_ERR_NO_SPACE;
       }
       return LV2_WORKER_ERR_UNKNOWN;
     }
@@ -286,7 +288,7 @@ namespace horst {
           std::cout << "getting to work\n";
           auto &item = m_work_items[m_work_items_tail];
           if (m_worker_interface.load ()->work) {
-            LV2_Worker_Status res = m_worker_interface.load ()->work (m_plugin_instance->m, &horst::worker_respond, this, item.first, item.second);
+            LV2_Worker_Status res = m_worker_interface.load ()->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, item.second);
             std::cout << "horst: lv2_plugin: worker_thread: res: " << res << "\n";
           }
           advance (m_work_items_tail, m_work_items.size ());
