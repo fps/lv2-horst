@@ -21,12 +21,17 @@
 #include <lv2/atom/atom.h>
 #include <lv2/worker/worker.h>
 
-#include <horst/unit.h>
-
 #include <dlfcn.h>
 #include <time.h>
 #include <pthread.h>
 
+#ifdef HORST_DEBUG
+#define DBG(x) { std::cerr << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << "\n"; }
+#else
+#define DBG(x) { }
+#endif
+
+#include <horst/unit.h>
 
 namespace horst {
 
@@ -66,6 +71,7 @@ namespace horst {
     horst () :
       m_lilv_world (new lilv_world),
       m_lilv_plugins (new lilv_plugins (m_lilv_world)) {
+      DBG("horst ()")
       Dl_info dl_info;
       if (dladdr ((const void*)dli_fname_test, &dl_info)) {
         m_horst_dli_fname = dl_info.dli_fname;

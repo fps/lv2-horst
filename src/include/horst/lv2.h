@@ -25,6 +25,7 @@ namespace horst {
     lilv_plugins (lilv_world_ptr world) :
       m (lilv_world_get_all_plugins (world->m)),
       m_world (world) {
+      DBG(".")
     }
   };
 
@@ -58,7 +59,9 @@ namespace horst {
       m (lilv_plugins_get_by_uri (plugins->m, node->m)),
       m_uri_node (node),
       m_lilv_plugins (plugins) {
+      DBG("...")
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin: Plugin not found. URI: " + m_uri_node->m_uri);
+      DBG(".")
     }
   };
 
@@ -74,6 +77,7 @@ namespace horst {
       m (lilv_plugin_instantiate (plugin->m, sample_rate, supported_features)),
       m_plugin (plugin)
     {
+      DBG("...")
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin_instance: Failed to instantiate plugin");
 
       m_initial_port_buffers.resize(lilv_plugin_get_num_ports (m_plugin->m), std::vector<float>(32));
@@ -81,11 +85,14 @@ namespace horst {
         lilv_instance_connect_port (m, port_index, &m_initial_port_buffers[port_index][0]);
       }
       lilv_instance_activate (m);
+      DBG(".")
     }
 
     ~lilv_plugin_instance () {
+      DBG("...")
       lilv_instance_deactivate (m);
       lilv_instance_free (m);
+      DBG(".")
     }
   };
 

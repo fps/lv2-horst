@@ -26,7 +26,7 @@ namespace horst {
       m_factor (factor),
       m_offset (offset)
     {
-
+      DBG(".")
     }
   };
 
@@ -36,11 +36,11 @@ namespace horst {
     unit () :
       m_atomic_enabled (true)
     {
-
+      DBG(".")
     }
 
     virtual ~unit () {
-
+      DBG(".")
     }
 
     virtual std::string get_jack_client_name () {
@@ -83,7 +83,7 @@ namespace horst {
     unit_wrapper (unit_ptr unit) :
       m_unit (unit)
     {
-
+      DBG(".")
     }
   };
 
@@ -98,7 +98,7 @@ namespace horst {
     jack_unit (bool expose_control_ports) :
       m_expose_control_ports (expose_control_ports)
     {
-
+      DBG(".")
     }
   };
 
@@ -134,7 +134,6 @@ namespace horst {
     plugin_ptr m_plugin;
 
     jack_nframes_t m_sample_rate;
-    bool m_sample_rate_set;
     jack_nframes_t m_buffer_size;
 
     plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, jack_client_t *jack_client, bool expose_control_ports) :
@@ -148,15 +147,20 @@ namespace horst {
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
-      m_plugin (plugin),
-      m_sample_rate_set (false)
+      m_plugin (plugin)
     {
+      DBG("...")
       std::string client_name = jack_client_name;
       if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
       if (m_jack_client == 0) {
         m_jack_client = jack_client_open (client_name.c_str(), JackNullOption, 0);
       }
       if (m_jack_client == 0) throw std::runtime_error ("horst: plugin_unit: Failed to open jack client. Name: " + jack_client_name);
+
+      m_sample_rate = jack_get_sample_rate (m_jack_client);
+      m_buffer_size = jack_get_buffer_size (m_jack_client);
+
+      m_plugin->instantiate (m_sample_rate, m_buffer_size);
 
       m_jack_midi_port = jack_port_register (m_jack_client, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
       if (m_jack_midi_port == 0) throw std::runtime_error ("horst: plugin_unit: Failed to register midi port: " + m_plugin->get_name () + ":midi-in");
@@ -208,14 +212,18 @@ namespace horst {
     }
 
     virtual ~plugin_unit () {
+      DBG("...")
       jack_deactivate (m_jack_client);
 
       if (m_internal_client) return;
 
       jack_client_close (m_jack_client);
+      DBG(".")
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
+      if (!m_plugin) return 0;
+
       bool enabled = m_atomic_enabled;
  
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
@@ -309,21 +317,28 @@ namespace horst {
     }
 
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
-      m_buffer_size = buffer_size;
-      // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
-      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
-        m_zero_buffers[port_index].resize (buffer_size, 0);
-      }
+      DBG("...")
+      if (buffer_size != m_buffer_size) {
+        m_buffer_size = buffer_size;
+        // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
+        for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
+          m_zero_buffers[port_index].resize (buffer_size, 0);
+        }
 
-      m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
+        m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
+      }
+      DBG(".")
       return 0;
     }
 
     virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
-      m_sample_rate = sample_rate;
-      // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
-      if (!m_sample_rate_set) m_sample_rate_set = true;
-      else m_plugin->instantiate ((double)sample_rate, m_buffer_size);
+      DBG("...")
+      if (sample_rate != m_sample_rate) {
+        m_sample_rate = sample_rate;
+        // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
+        m_plugin->instantiate ((double)sample_rate, m_buffer_size);
+      }
+      DBG(".")
       return 0;
     }
 
@@ -371,11 +386,13 @@ namespace horst {
     internal_plugin_unit (jack_client_ptr jack_client, jack_intclient_t jack_intclient) :
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
-
+      DBG(".")
     }
 
     ~internal_plugin_unit () {
+      DBG("...")
       jack_internal_client_unload (m_jack_client->m, m_jack_intclient);
+      DBG(".")
     }
   };
 }
