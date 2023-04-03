@@ -235,9 +235,10 @@ namespace horst {
       LV2_Worker_Interface *interface = m_worker_interface;
       if (interface) {
         if (number_of_items (m_work_responses_head, m_work_responses_tail, m_work_responses.size ())) {
+          DBG_JACK("has responses")
           auto &item = m_work_responses[m_work_responses_tail];
           if (interface->work_response) {
-            DBG("response...")
+            DBG_JACK("response...")
             interface->work_response (m_plugin_instance->m, item.first, item.second);
           }
           advance (m_work_responses_tail, m_work_responses.size ());
@@ -280,9 +281,14 @@ namespace horst {
     }
 
     LV2_Worker_Status schedule_work (uint32_t size, const void *data) {
-      DBG(".")
+      DBG_JACK(".")
+      if (m_worker_quit == true) {
+        DBG_JACK("not scheduling work")
+        return LV2_WORKER_ERR_UNKNOWN;
+      }
+
       if (m_worker_interface) {
-        DBG("schedule_work")
+        DBG_JACK("schedule_work")
         if (number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) < (int)m_work_items.size() - 1) {
           m_work_items[m_work_items_head] = std::make_pair(size, malloc (size));
           memcpy (m_work_items[m_work_items_head].second, data, size);

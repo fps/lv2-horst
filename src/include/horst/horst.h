@@ -14,6 +14,7 @@
 #include <jack/jack.h>
 #include <jack/intclient.h>
 #include <jack/midiport.h>
+#include <jack/control.h>
 
 #include <lilv/lilv.h>
 #include <lv2/options/options.h>
@@ -26,7 +27,9 @@
 #include <pthread.h>
 
 #ifdef HORST_DEBUG
-#define DBG(x) { std::cerr << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << "\n"; }
+#define DBG(x) { std::cerr << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << std::endl << std::flush; }
+//#define DBG_JACK(x) { jack_info ("%s:%s:%s: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, x); }
+#define DBG_JACK DBG
 #else
 #define DBG(x) { }
 #endif
