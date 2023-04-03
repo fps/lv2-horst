@@ -61,6 +61,8 @@ namespace horst {
     LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data);
   }
 
+#define HORST_WORK_ITEM_MAX_SIZE (1024 * 1024)
+
   struct lv2_plugin : public plugin_base {
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
@@ -82,10 +84,10 @@ namespace horst {
     uint64_t pad1;
     std::atomic<LV2_Worker_Interface*> m_worker_interface;
     uint64_t pad2;
-    std::vector<std::pair<unsigned, void *>> m_work_items;
+    std::vector<std::pair<unsigned, std::array<uint8_t, HORST_WORK_ITEM_MAX_SIZE>>> m_work_items;
     std::atomic<size_t> m_work_items_head;
     std::atomic<size_t> m_work_items_tail;
-    std::vector<std::pair<unsigned, void*>> m_work_responses;
+    std::vector<std::pair<unsigned, std::array<uint8_t, HORST_WORK_ITEM_MAX_SIZE>>> m_work_responses;
     std::atomic<size_t> m_work_responses_head;
     std::atomic<size_t> m_work_responses_tail;
     std::atomic<bool> m_worker_quit;
@@ -112,11 +114,11 @@ namespace horst {
       m_worker_schedule { (LV2_Worker_Schedule_Handle)this, horst::schedule_work },
       m_worker_interface (0),
 
-      m_work_items (1024),
+      m_work_items (32),
       m_work_items_head (0),
       m_work_items_tail (0),
 
-      m_work_responses (1024),
+      m_work_responses (32),
       m_work_responses_head (0),
       m_work_responses_tail (0),
 
@@ -237,6 +239,7 @@ namespace horst {
       m_worker_interface = (LV2_Worker_Interface*)lilv_instance_get_extension_data (m_plugin_instance->m, LV2_WORKER__interface); 
       DBG("worker interface: " << m_worker_interface);
       if (m_worker_interface) DBG((void*)(m_worker_interface.load ()->work) << " " << (void*)(m_worker_interface.load ()->work_response) << " " << (void*)(m_worker_interface.load ()->end_run));
+      // usleep (500000);
     }
 
     virtual void connect_port (size_t port_index, float *data) override {
@@ -250,11 +253,10 @@ namespace horst {
           DBG_JACK("has responses")
           auto &item = m_work_responses[m_work_responses_tail];
           if (interface->work_response) {
-            DBG_JACK("item: " << item.first << " " << item.second)
-            interface->work_response (m_plugin_instance->m, item.first, item.second);
+            DBG_JACK("item: " << item.first << " " << item.second[0])
+            interface->work_response (m_plugin_instance->m, item.first, &item.second[0]);
           }
           advance (m_work_responses_tail, m_work_responses.size ());
-          free (item.second);
         }
 
         lilv_instance_run (m_plugin_instance->m, nframes);
@@ -302,8 +304,12 @@ namespace horst {
       if (m_worker_interface) {
         DBG_JACK("schedule_work")
         if (number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) < (int)m_work_items.size() - 1) {
-          m_work_items[m_work_items_head] = std::make_pair(size, malloc (size));
-          memcpy (m_work_items[m_work_items_head].second, data, size);
+          if (size > HORST_WORK_ITEM_MAX_SIZE) return LV2_WORKER_ERR_NO_SPACE;
+
+          auto &item = m_work_items[m_work_items_head];
+          item.first = size;
+          memcpy (&item.second[0], data, size);
+          DBG("item: " << item.first << " " << item.second[0])
           advance (m_work_items_head, m_work_items.size ());
           return LV2_WORKER_SUCCESS; // m_worker_interface->work (m_plugin_instance->m, horst::worker_respond, this, size, data);
         }
@@ -316,36 +322,38 @@ namespace horst {
       DBG(".")
       if (m_worker_interface) {
         DBG("respond.");
-        m_work_responses[m_work_responses_head] = std::make_pair(size, malloc (size));
-        memcpy (m_work_responses[m_work_responses_head].second, data, size);
-        DBG("item: " << m_work_responses[m_work_responses_head].first << " " << m_work_responses[m_work_responses_head].second)
+        if (size > HORST_WORK_ITEM_MAX_SIZE) return LV2_WORKER_ERR_NO_SPACE;
+        auto &item = m_work_responses[m_work_responses_head];
+        memcpy (&item.second[0], data, size);
+        DBG("item: " << item.first << " " << item.second[0])
         advance (m_work_responses_head, m_work_responses.size ());
       }
       return LV2_WORKER_SUCCESS;
     }
 
     void *worker_thread () {
+      DBG("...")
       while (!m_worker_quit) {
         LV2_Worker_Interface *interface = m_worker_interface;
         // std::cout << "m: " << m_worker_interface << " interface: " << interface << " number: " << number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) << "\n";
         while (m_worker_interface && number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ())) {
           DBG("getting to work: " << (void*)(interface->work) << " " << (void*)(interface->work_response) << " " << (void*)(interface->end_run))
           auto &item = m_work_items[m_work_items_tail];
-          DBG("item: " << item.first << " " << item.second)
+          DBG("item: " << item.first << " " << item.second[0])
           if (m_worker_interface.load ()->work) {
             #ifdef DEBUG_HORST
-            LV2_Worker_Status res = interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, item.second);
+            LV2_Worker_Status res = interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
             DBG("worker_thread: res: " << res)
             #else
-            interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, item.second);
+            interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
             #endif
-            free (item.second);
           }
           advance (m_work_items_tail, m_work_items.size ());
         }
         // std::cout << "horst: lv2_plugin: worker_thread ()\n";
         usleep (1000);
       }
+      DBG(".")
       return 0;
     }
 

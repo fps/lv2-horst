@@ -31,9 +31,11 @@
 #define DBG(x) { std::cerr << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << std::endl << std::flush; }
 //#define DBG_JACK(x) { jack_info ("%s:%s:%s: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, x); }
 #define DBG_JACK DBG
+#define DBG_ITEM(x) { std::cerr << x; }
 #else
 #define DBG(x) { }
 #define DBG_JACK(x) { }
+#define DBG_ITEM(x) { }
 #endif
 
 #include <horst/unit.h>
