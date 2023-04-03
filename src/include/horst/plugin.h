@@ -62,6 +62,8 @@ namespace horst {
   }
 
   struct lv2_plugin : public plugin_base {
+    lilv_world_ptr m_lilv_world;
+    lilv_plugins_ptr m_lilv_plugins;
     lilv_uri_node_ptr m_lilv_plugin_uri;
     lilv_plugin_ptr m_lilv_plugin;
 
@@ -72,6 +74,7 @@ namespace horst {
 
     uint32_t m_min_block_length;
     uint32_t m_max_block_length;
+    uint32_t m_nominal_block_length;
 
     std::vector<LV2_Options_Option> m_options;
 
@@ -94,11 +97,14 @@ namespace horst {
     LV2_Feature m_urid_map_feature;
     LV2_Feature m_is_live_feature;
     LV2_Feature m_bounded_block_length_feature;
+    LV2_Feature m_nominal_block_length_feature;
     LV2_Feature m_options_feature;
     LV2_Feature m_worker_feature;
     std::vector<LV2_Feature*> m_supported_features;
 
     lv2_plugin (lilv_world_ptr world, lilv_plugins_ptr plugins, const std::string &uri) :
+      m_lilv_world (world),
+      m_lilv_plugins (plugins),
       m_lilv_plugin_uri (new lilv_uri_node (world, uri)),
       m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
       m_uri (uri),
@@ -121,12 +127,14 @@ namespace horst {
       m_urid_map_feature { .URI = LV2_URID__map, .data = &m_urid_map },
       m_is_live_feature { .URI = LV2_CORE__isLive, .data = 0 },
       m_bounded_block_length_feature { .URI = LV2_BUF_SIZE__boundedBlockLength, .data = 0 },
+      m_nominal_block_length_feature { .URI = LV2_BUF_SIZE__nominalBlockLength, .data = 0 },
       m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] },
       m_worker_feature { .URI = LV2_WORKER__schedule, .data = &m_worker_schedule }
     {
       DBG(".")
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__minBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_min_block_length });
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__maxBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_max_block_length });
+      m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = urid_map (LV2_BUF_SIZE__nominalBlockLength), .size = sizeof (int32_t), .type = urid_map (LV2_ATOM__Int), .value = &m_max_block_length });
       m_options.push_back (LV2_Options_Option { .context = LV2_OPTIONS_INSTANCE, .subject = 0, .key = 0, .size = 0, .type = 0, .value = 0 });
       m_options_feature.data = &m_options[0];
 
@@ -134,6 +142,7 @@ namespace horst {
       m_supported_features.push_back (&m_is_live_feature);
       m_supported_features.push_back (&m_options_feature);
       m_supported_features.push_back (&m_bounded_block_length_feature);
+      m_supported_features.push_back (&m_nominal_block_length_feature);
       m_supported_features.push_back (&m_worker_feature);
       m_supported_features.push_back (0);
 
@@ -158,6 +167,7 @@ namespace horst {
         lilv_nodes_free (features);
       }
 
+      #ifdef DEBUG_HORST
       lilv_uri_node required_options_uri (world, LV2_OPTIONS__requiredOption);
       LilvNodes *required_options = lilv_plugin_get_value (m_lilv_plugin->m, required_options_uri.m);
       LILV_FOREACH (nodes, i, required_options) {
@@ -165,6 +175,7 @@ namespace horst {
         DBG("Required options: " << lilv_node_as_string (node))
       }
       lilv_nodes_free (required_options);
+      #endif
 
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
@@ -220,6 +231,7 @@ namespace horst {
       DBG(sample_rate << " " << buffer_size)
       m_min_block_length = 0;
       m_max_block_length = (int32_t)buffer_size;
+      m_nominal_block_length = (int32_t)buffer_size;
 
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
       m_worker_interface = (LV2_Worker_Interface*)lilv_instance_get_extension_data (m_plugin_instance->m, LV2_WORKER__interface); 
@@ -238,7 +250,7 @@ namespace horst {
           DBG_JACK("has responses")
           auto &item = m_work_responses[m_work_responses_tail];
           if (interface->work_response) {
-            DBG_JACK("response...")
+            DBG_JACK("item: " << item.first << " " << item.second)
             interface->work_response (m_plugin_instance->m, item.first, item.second);
           }
           advance (m_work_responses_tail, m_work_responses.size ());
@@ -306,6 +318,7 @@ namespace horst {
         DBG("respond.");
         m_work_responses[m_work_responses_head] = std::make_pair(size, malloc (size));
         memcpy (m_work_responses[m_work_responses_head].second, data, size);
+        DBG("item: " << m_work_responses[m_work_responses_head].first << " " << m_work_responses[m_work_responses_head].second)
         advance (m_work_responses_head, m_work_responses.size ());
       }
       return LV2_WORKER_SUCCESS;
@@ -318,10 +331,15 @@ namespace horst {
         while (m_worker_interface && number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ())) {
           DBG("getting to work: " << (void*)(interface->work) << " " << (void*)(interface->work_response) << " " << (void*)(interface->end_run))
           auto &item = m_work_items[m_work_items_tail];
+          DBG("item: " << item.first << " " << item.second)
           if (m_worker_interface.load ()->work) {
+            #ifdef DEBUG_HORST
             LV2_Worker_Status res = interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, item.second);
-            free (item.second);
             DBG("worker_thread: res: " << res)
+            #else
+            interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, item.second);
+            #endif
+            free (item.second);
           }
           advance (m_work_items_tail, m_work_items.size ());
         }
@@ -335,6 +353,7 @@ namespace horst {
       DBG("...")
       m_worker_quit = true;
       pthread_join (m_worker_thread, 0);
+      m_plugin_instance = lilv_plugin_instance_ptr();
       DBG(".")
     }
   };

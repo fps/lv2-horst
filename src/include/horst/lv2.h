@@ -6,13 +6,17 @@ namespace horst {
     LilvWorld *m;
 
     lilv_world () {
+      DBG("...")
       m = lilv_world_new ();
       if (m == 0) throw std::runtime_error ("horst: lilv_world: Failed to create lilv world");
       lilv_world_load_all (m);
+      DBG(".")
     }
 
     ~lilv_world () {
+      DBG("...")
       lilv_world_free (m);
+      DBG(".")
     }
   };
 
@@ -25,6 +29,10 @@ namespace horst {
     lilv_plugins (lilv_world_ptr world) :
       m (lilv_world_get_all_plugins (world->m)),
       m_world (world) {
+      DBG(".")
+    }
+
+    ~lilv_plugins () {
       DBG(".")
     }
   };

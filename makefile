@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: src/horst.so src
+all: src/horst.so src/horst_cli
 # all: src/horst.so src/horst_internal.so
 
 HORST_HEADERS = $(wildcard src/include/horst/*.h) $(wildcard src/include/horst/lart/*.h) $(wildcard src/include/horst/ladspa/*.h)
@@ -16,10 +16,13 @@ PYTHON_LDFLAGS = `python3-config --ldflags --embed`
 CXXFLAGS += $(OPTIMIZATION_FLAGS) -fPIC -std=c++20 -Isrc/include -march=native -mcpu=native -Wall -pedantic `pkg-config lilv-0 --cflags` `pkg-config lv2 --cflags` -pthread
 LDFLAGS += `pkg-config lilv-0 --libs` -ljack -ljackserver -latomic -pthread
 
-src/horst.so: src/horst_python.cc $(HORST_HEADERS)
+src/horst_cli: src/horst_cli.cc $(HORST_HEADERS) makefile
+	g++ -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)
+
+src/horst.so: src/horst_python.cc $(HORST_HEADERS) makefile
 	g++ -shared -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)
 
-src/horst_internal.so: src/horst_internal.cc $(HORST_HEADERS)
+src/horst_internal.so: src/horst_internal.cc $(HORST_HEADERS) makefile
 	g++ -shared -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 clean:
