@@ -66,58 +66,36 @@ namespace horst {
 
   struct lv2_plugin : public plugin_base {
     lilv_world_ptr m_lilv_world;
-    std::array<uint8_t, 1024> m_pad1;
     lilv_plugins_ptr m_lilv_plugins;
-    std::array<uint8_t, 1024> m_pad2;
     lilv_uri_node_ptr m_lilv_plugin_uri;
-    std::array<uint8_t, 1024> m_pad3;
     lilv_plugin_ptr m_lilv_plugin;
-    std::array<uint8_t, 1024> m_pad4;
 
     lilv_plugin_instance_ptr m_plugin_instance;
-    std::array<uint8_t, 1024> m_pad5;
 
     const std::string m_uri;
-    std::array<uint8_t, 1024> m_pad6;
     std::string m_name;
-    std::array<uint8_t, 1024> m_pad7;
 
     uint32_t m_min_block_length;
-    std::array<uint8_t, 1024> m_pad8;
     uint32_t m_max_block_length;
-    std::array<uint8_t, 1024> m_pad9;
     uint32_t m_nominal_block_length;
-    std::array<uint8_t, 1024> m_pad10;
 
     std::vector<LV2_Options_Option> m_options;
-    std::array<uint8_t, 1024> m_pad11;
 
     LV2_Worker_Schedule m_worker_schedule;
-    std::array<uint8_t, 1024> m_pad12;
     std::atomic<LV2_Worker_Interface*> m_worker_interface;
-    std::array<uint8_t, 1024> m_pad13;
 
     std::array<std::pair<unsigned, std::array<uint8_t, HORST_WORK_ITEM_MAX_SIZE>>, HORST_WORK_ITEMS> m_work_items;
-    std::array<uint8_t, 1024> m_pad14;
     std::atomic<size_t> m_work_items_head;
-    std::array<uint8_t, 1024> m_pad15;
     std::atomic<size_t> m_work_items_tail;
-    std::array<uint8_t, 1024> m_pad16;
 
     std::array<std::pair<unsigned, std::array<uint8_t, HORST_WORK_ITEM_MAX_SIZE>>, HORST_WORK_ITEMS> m_work_responses;
-    std::array<uint8_t, 1024> m_pad17;
     std::atomic<size_t> m_work_responses_head;
-    std::array<uint8_t, 1024> m_pad18;
     std::atomic<size_t> m_work_responses_tail;
-    std::array<uint8_t, 1024> m_pad19;
 
     std::atomic<bool> m_worker_quit;
-    std::array<uint8_t, 1024> m_pad20;
     pthread_t m_worker_thread;
-    std::array<uint8_t, 1024> m_pad21;
 
     std::vector<std::string> m_mapped_uris;
-    std::array<uint8_t, 1024> m_pad22;
 
     LV2_URID_Map m_urid_map;
     LV2_Feature m_urid_map_feature;
