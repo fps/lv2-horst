@@ -275,8 +275,8 @@ namespace horst {
 
     void advance (std::atomic<size_t> &item, const size_t &size) {
       DBG("advance: " << item);
-      item++;
-      if (item >= size) item = 0;
+      int prev = item;
+      item = (prev + 1) % size;
       DBG("advanced: " << item)
     }
 

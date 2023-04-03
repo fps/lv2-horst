@@ -168,15 +168,18 @@ namespace horst {
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
         port_properties &p = m_plugin->m_port_properties[index];
         if (p.m_is_control && p.m_is_input) {
+          DBG("port index: " << index << " default value: " << p.m_default_value)
           m_atomic_port_values[index] = p.m_default_value;
           m_port_values[index] = p.m_default_value;
         }
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
           if (p.m_is_input) {
+            DBG("port index: " << index << " - registering jack input port")
             m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
             if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
             m_jack_input_port_indices.push_back (index);
           } else {
+            DBG("port index: " << index << " - registering jack output port")
             m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
             if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
             m_jack_output_port_indices.push_back (index);
@@ -325,6 +328,7 @@ namespace horst {
           m_zero_buffers[port_index].resize (buffer_size, 0);
         }
 
+        DBG("re-instantiating")
         m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
       }
       DBG(".")
@@ -336,6 +340,7 @@ namespace horst {
       if (sample_rate != m_sample_rate) {
         m_sample_rate = sample_rate;
         // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
+        DBG("re-instantiating")
         m_plugin->instantiate ((double)sample_rate, m_buffer_size);
       }
       DBG(".")
