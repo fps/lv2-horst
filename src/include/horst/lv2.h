@@ -6,17 +6,19 @@ namespace horst {
     LilvWorld *m;
 
     lilv_world () {
-      DBG("...")
+      DBG_ENTER
       m = lilv_world_new ();
       if (m == 0) throw std::runtime_error ("horst: lilv_world: Failed to create lilv world");
+      DBG((void*)m)
       lilv_world_load_all (m);
-      DBG(".")
+      DBG_EXIT
     }
 
     ~lilv_world () {
-      DBG("...")
+      DBG_ENTER
+      DBG((void*)m)
       lilv_world_free (m);
-      DBG(".")
+      DBG_EXIT
     }
   };
 
@@ -29,11 +31,11 @@ namespace horst {
     lilv_plugins (lilv_world_ptr world) :
       m (lilv_world_get_all_plugins (world->m)),
       m_world (world) {
-      DBG(".")
+      DBG_EXIT
     }
 
     ~lilv_plugins () {
-      DBG(".")
+      DBG_EXIT
     }
   };
 
@@ -52,7 +54,7 @@ namespace horst {
     }
 
     ~lilv_uri_node () {
-      lilv_node_free (m);
+      // lilv_node_free (m);
     }
   };
 
@@ -67,9 +69,9 @@ namespace horst {
       m (lilv_plugins_get_by_uri (plugins->m, node->m)),
       m_uri_node (node),
       m_lilv_plugins (plugins) {
-      DBG("...")
+      DBG_ENTER
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin: Plugin not found. URI: " + m_uri_node->m_uri);
-      DBG(".")
+      DBG_EXIT
     }
   };
 
@@ -85,7 +87,7 @@ namespace horst {
       m (lilv_plugin_instantiate (plugin->m, sample_rate, supported_features)),
       m_plugin (plugin)
     {
-      DBG("...")
+      DBG_ENTER
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin_instance: Failed to instantiate plugin");
 
       m_initial_port_buffers.resize(lilv_plugin_get_num_ports (m_plugin->m), std::vector<float>(32));
@@ -93,14 +95,14 @@ namespace horst {
         lilv_instance_connect_port (m, port_index, &m_initial_port_buffers[port_index][0]);
       }
       lilv_instance_activate (m);
-      DBG(".")
+      DBG_EXIT
     }
 
     ~lilv_plugin_instance () {
-      DBG("...")
+      DBG_ENTER
       lilv_instance_deactivate (m);
       lilv_instance_free (m);
-      DBG(".")
+      DBG_EXIT
     }
   };
 

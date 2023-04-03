@@ -26,7 +26,7 @@ namespace horst {
       m_factor (factor),
       m_offset (offset)
     {
-      DBG(".")
+      DBG_EXIT
     }
   };
 
@@ -36,11 +36,11 @@ namespace horst {
     unit () :
       m_atomic_enabled (true)
     {
-      DBG(".")
+      DBG_EXIT
     }
 
     virtual ~unit () {
-      DBG(".")
+      DBG_EXIT
     }
 
     virtual std::string get_jack_client_name () {
@@ -83,7 +83,7 @@ namespace horst {
     unit_wrapper (unit_ptr unit) :
       m_unit (unit)
     {
-      DBG(".")
+      DBG_EXIT
     }
   };
 
@@ -98,7 +98,7 @@ namespace horst {
     jack_unit (bool expose_control_ports) :
       m_expose_control_ports (expose_control_ports)
     {
-      DBG(".")
+      DBG_EXIT
     }
   };
 
@@ -149,7 +149,7 @@ namespace horst {
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
       m_plugin (plugin)
     {
-      DBG("...")
+      DBG_ENTER
       std::string client_name = jack_client_name;
       if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
       if (m_jack_client == 0) {
@@ -215,13 +215,13 @@ namespace horst {
     }
 
     virtual ~plugin_unit () {
-      DBG("...")
+      DBG_ENTER
       jack_deactivate (m_jack_client);
 
       if (m_internal_client) return;
 
       jack_client_close (m_jack_client);
-      DBG(".")
+      DBG_EXIT
     }
 
     virtual int process_callback (jack_nframes_t nframes) override {
@@ -320,7 +320,7 @@ namespace horst {
     }
 
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
-      DBG("...")
+      DBG_ENTER
       if (buffer_size != m_buffer_size) {
         m_buffer_size = buffer_size;
         // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
@@ -331,19 +331,19 @@ namespace horst {
         DBG("re-instantiating")
         m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
       }
-      DBG(".")
+      DBG_EXIT
       return 0;
     }
 
     virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
-      DBG("...")
+      DBG_ENTER
       if (sample_rate != m_sample_rate) {
         m_sample_rate = sample_rate;
         // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
         DBG("re-instantiating")
         m_plugin->instantiate ((double)sample_rate, m_buffer_size);
       }
-      DBG(".")
+      DBG_EXIT
       return 0;
     }
 
@@ -391,13 +391,13 @@ namespace horst {
     internal_plugin_unit (jack_client_ptr jack_client, jack_intclient_t jack_intclient) :
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
-      DBG(".")
+      DBG_EXIT
     }
 
     ~internal_plugin_unit () {
-      DBG("...")
+      DBG_ENTER
       jack_internal_client_unload (m_jack_client->m, m_jack_intclient);
-      DBG(".")
+      DBG_EXIT
     }
   };
 }

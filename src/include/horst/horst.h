@@ -28,15 +28,18 @@
 #include <string.h>
 
 #ifdef HORST_DEBUG
-#define DBG(x) { std::cerr << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << std::endl << std::flush; }
+#define DBG(x) { std::cerr << "  " << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << std::endl << std::flush; }
 //#define DBG_JACK(x) { jack_info ("%s:%s:%s: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, x); }
 #define DBG_JACK DBG
-#define DBG_ITEM(x) { std::cerr << x; }
+#define DBG_ITEM(x) { std::cerr << x ; }
 #else
 #define DBG(x) { }
 #define DBG_JACK(x) { }
 #define DBG_ITEM(x) { }
 #endif
+
+#define DBG_ENTER DBG("<- enter...")
+#define DBG_EXIT DBG("-> done.")
 
 #include <horst/unit.h>
 
@@ -78,7 +81,7 @@ namespace horst {
     horst () :
       m_lilv_world (new lilv_world),
       m_lilv_plugins (new lilv_plugins (m_lilv_world)) {
-      DBG(".")
+      DBG_ENTER
       Dl_info dl_info;
       if (dladdr ((const void*)dli_fname_test, &dl_info)) {
         m_horst_dli_fname = dl_info.dli_fname;
@@ -94,7 +97,7 @@ namespace horst {
       }
 
       m_jack_client = jack_client_ptr (new jack_client ("horst-loader", JackNullOption));
-      DBG(".")
+      DBG_EXIT
     }
 
     std::string get_internal_client_load_name (const std::string &dli_fname) {
@@ -114,7 +117,7 @@ namespace horst {
     }
 
     ~horst () {
-      DBG(".")
+      DBG_EXIT
     }
 
     std::vector<std::string> lv2_uris () {
