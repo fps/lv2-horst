@@ -54,7 +54,7 @@ namespace horst {
     }
 
     ~lilv_uri_node () {
-      // lilv_node_free (m);
+      lilv_node_free (m);
     }
   };
 

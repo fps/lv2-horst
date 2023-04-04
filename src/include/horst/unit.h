@@ -149,7 +149,9 @@ namespace horst {
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
-      m_plugin (plugin)
+      m_plugin (plugin),
+      m_sample_rate (0),
+      m_buffer_size (0)
     {
       DBG_ENTER
       std::string client_name = jack_client_name;
@@ -162,6 +164,9 @@ namespace horst {
       m_sample_rate = jack_get_sample_rate (m_jack_client);
       m_buffer_size = jack_get_buffer_size (m_jack_client);
 
+      change_buffer_sizes ();
+
+      // buffer_size_callback (jack_get_buffer_size (m_jack_client));
       m_plugin->instantiate (m_sample_rate, m_buffer_size);
 
       m_jack_midi_port = jack_port_register (m_jack_client, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
@@ -238,6 +243,9 @@ namespace horst {
           if (p.m_is_input) {
             if (enabled) {
               m_port_data_locations[index] = m_jack_port_buffers[index];
+#if 0
+              DBG("input data: " << m_port_data_locations[index][0])
+#endif
             } else {
               m_port_data_locations[index] = &m_zero_buffers[index][0];
             }
@@ -284,6 +292,7 @@ namespace horst {
           if (binding.m_cc != cc) continue;
           if (binding.m_channel != channel) continue;
 
+          // DBG("calling run (" << event.time - processed_frames <<")")
           m_plugin->run (event.time - processed_frames);
           processed_frames = event.time;
 
@@ -308,6 +317,7 @@ namespace horst {
         }
       }
 
+      // DBG("calling run (" << nframes - processed_frames << ")")
       m_plugin->run (nframes - processed_frames);
 
       if (!enabled) {
@@ -318,17 +328,29 @@ namespace horst {
         }
       }
 
+#if 0
+      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
+        if (m_plugin->m_port_properties[port_index].m_is_audio && m_plugin->m_port_properties[port_index].m_is_output) {
+          DBG("output data: " << m_port_data_locations[port_index][0])
+        }
+      }
+#endif
       return 0;
+    }
+
+    void change_buffer_sizes () {
+      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
+        m_zero_buffers[port_index].resize (m_buffer_size, 0);
+      }
     }
 
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
       DBG_ENTER
+      DBG("buffer_size: " << buffer_size)
       if (buffer_size != m_buffer_size) {
         m_buffer_size = buffer_size;
-        // std::cout << "buffer size callback. buffer size: " << buffer_size << "\n";
-        for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
-          m_zero_buffers[port_index].resize (buffer_size, 0);
-        }
+
+        change_buffer_sizes ();
 
         DBG("re-instantiating")
         m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);

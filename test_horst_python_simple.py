@@ -9,7 +9,7 @@ p.feedback_.value = 0.9
 p.amount_.value = 1
 p.medium_.value = 2
 
-p.feedback_.bind_midi(0, 0)
+# p.feedback_.bind_midi(0, 0)
 
 # h.connect([
 #   ('system:capture_1', p._in_l),

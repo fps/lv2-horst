@@ -176,7 +176,7 @@ namespace horst {
         lilv_nodes_free (features);
       }
 
-      #ifdef DEBUG_HORST
+      #ifdef HORST_DEBUG
       lilv_uri_node required_options_uri (world, LV2_OPTIONS__requiredOption);
       LilvNodes *required_options = lilv_plugin_get_value (m_lilv_plugin->m, required_options_uri.m);
       LILV_FOREACH (nodes, i, required_options) {
@@ -217,9 +217,9 @@ namespace horst {
           p.m_default_value = lilv_node_as_float (def);
           p.m_maximum_value = lilv_node_as_float (max);
 
-          // lilv_node_free (def);
-          // lilv_node_free (min);
-          // lilv_node_free (max);
+          lilv_node_free (def);
+          lilv_node_free (min);
+          lilv_node_free (max);
         }
       }
 
@@ -227,7 +227,7 @@ namespace horst {
       LilvNode *name_node = lilv_world_get (world->m, m_lilv_plugin_uri->m, doap_name.m, 0);
       if (name_node == 0) throw std::runtime_error ("horst: lv2_plugin: Failed to get name of plugin. URI: " + m_uri);
       m_name = lilv_node_as_string (name_node);
-      // lilv_node_free (name_node);
+      lilv_node_free (name_node);
 
       int ret = pthread_create (&m_worker_thread, 0, horst::worker_thread, this);
       if (ret != 0) throw std::runtime_error ("horst: lv2_plugin: Failed to create worker thread");
