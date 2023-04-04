@@ -26,6 +26,8 @@ namespace horst {
       m_factor (factor),
       m_offset (offset)
     {
+      DBG_ENTER
+      DBG(enabled << " " << channel << " " << cc << " " << factor << " " << offset)
       DBG_EXIT
     }
   };

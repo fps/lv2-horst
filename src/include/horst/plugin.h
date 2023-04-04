@@ -261,7 +261,7 @@ namespace horst {
           auto &item = m_work_responses[m_work_responses_tail];
           if (interface->work_response) {
             DBG_JACK("item: " << item.first << " " << (int)item.second[0])
-            interface->work_response (m_plugin_instance->m, item.first, &item.second[0]);
+            interface->work_response (lilv_instance_get_handle (m_plugin_instance->m), item.first, &item.second[0]);
           }
           advance (m_work_responses_tail, m_work_responses.size ());
         }
@@ -269,7 +269,7 @@ namespace horst {
         lilv_instance_run (m_plugin_instance->m, nframes);
 
         if (interface->end_run) {
-          interface->end_run (m_plugin_instance->m);
+          interface->end_run (lilv_instance_get_handle (m_plugin_instance->m));
         }
       }
     }
@@ -302,14 +302,14 @@ namespace horst {
     }
 
     LV2_Worker_Status schedule_work (uint32_t size, const void *data) {
-      DBG_JACK(".")
+      DBG_ENTER
       if (m_worker_quit == true) {
-        DBG_JACK("not scheduling work")
+        DBG("quit!")
         return LV2_WORKER_ERR_UNKNOWN;
       }
 
       if (m_worker_interface) {
-        DBG_JACK("schedule_work")
+        DBG("schedule_work")
         if (number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) < (int)m_work_items.size() - 1) {
           if (size > HORST_WORK_ITEM_MAX_SIZE) return LV2_WORKER_ERR_NO_SPACE;
 
@@ -318,10 +318,13 @@ namespace horst {
           memcpy (&item.second[0], data, size);
           DBG_JACK("item: " << item.first << " " << (int)item.second[0])
           advance (m_work_items_head, m_work_items.size ());
+          DBG_EXIT
           return LV2_WORKER_SUCCESS; // m_worker_interface->work (m_plugin_instance->m, horst::worker_respond, this, size, data);
         }
+        DBG_EXIT
         return LV2_WORKER_ERR_NO_SPACE;
       }
+      DBG_EXIT
       return LV2_WORKER_ERR_UNKNOWN;
     }
 
@@ -349,11 +352,12 @@ namespace horst {
           auto &item = m_work_items[m_work_items_tail];
           DBG("item: " << item.first << " " << (int)item.second[0])
           if (m_worker_interface.load ()->work) {
+            DBG(m_plugin_instance->m)
             #ifdef DEBUG_HORST
-            LV2_Worker_Status res = interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
+            LV2_Worker_Status res = interface->work (lilv_instance_get_handle (m_plugin_instance->m), &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
             DBG("worker_thread: res: " << res)
             #else
-            interface->work (m_plugin_instance->m, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
+            interface->work (lilv_instance_get_handle (m_plugin_instance->m), &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
             #endif
           }
           advance (m_work_items_tail, m_work_items.size ());

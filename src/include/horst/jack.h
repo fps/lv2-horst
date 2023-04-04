@@ -7,15 +7,15 @@ namespace horst {
 
     jack_client (const std::string &client_name, jack_options_t options) :
       m (jack_client_open (client_name.c_str (), options, 0)) {
-      DBG("...")
+      DBG_ENTER
       if (m == 0) throw std::runtime_error ("horst: jack_client: Failed to open. Name: " + client_name);
-      DBG(".")
+      DBG_EXIT
     }
 
     ~jack_client () {
-      DBG("...")
+      DBG_ENTER
       jack_client_close (m);
-      DBG(".")
+      DBG_EXIT
     }
   };
 
