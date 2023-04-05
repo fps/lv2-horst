@@ -288,6 +288,11 @@ namespace horst
     }
 
     void change_buffer_sizes () {
+      if (m_plugin->m_power_of_two_block_length_required) {
+        if (!(m_buffer_size & (m_buffer_size - 1))) {
+          throw std::runtime_error ("power of two buffer size required");
+        }
+      }
       for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
         m_zero_buffers[port_index].resize (m_buffer_size, 0);
       }

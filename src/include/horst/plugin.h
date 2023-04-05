@@ -22,9 +22,11 @@ namespace horst {
     std::vector<port_properties> m_port_properties;
 
     bool m_fixed_block_length_required;
+    bool m_power_of_two_block_length_required;
 
     plugin_base () :
-      m_fixed_block_length_required (false)
+      m_fixed_block_length_required (false),
+      m_power_of_two_block_length_required (false)
     {
 
     }
@@ -112,6 +114,7 @@ namespace horst {
     LV2_Feature m_nominal_block_length_feature;
     LV2_Feature m_fixed_block_length_feature;
     LV2_Feature m_coarse_block_length_feature;
+    LV2_Feature m_power_of_two_block_length_feature;
     LV2_Feature m_options_feature;
     LV2_Feature m_worker_feature;
     std::vector<LV2_Feature*> m_supported_features;
@@ -142,6 +145,7 @@ namespace horst {
       m_nominal_block_length_feature { .URI = LV2_BUF_SIZE__nominalBlockLength, .data = 0 },
       m_fixed_block_length_feature { .URI = LV2_BUF_SIZE__fixedBlockLength, .data = 0 },
       m_coarse_block_length_feature { .URI = LV2_BUF_SIZE__coarseBlockLength, .data = 0 },
+      m_power_of_two_block_length_feature { .URI = LV2_BUF_SIZE__powerOf2BlockLength, .data = 0 },
       m_options_feature { .URI = LV2_OPTIONS__options, .data = &m_options[0] },
       m_worker_feature { .URI = LV2_WORKER__schedule, .data = &m_worker_schedule }
     {
@@ -166,6 +170,7 @@ namespace horst {
       m_supported_features.push_back (&m_nominal_block_length_feature);
       m_supported_features.push_back (&m_fixed_block_length_feature);
       m_supported_features.push_back (&m_coarse_block_length_feature);
+      m_supported_features.push_back (&m_power_of_two_block_length_feature);
       m_supported_features.push_back (&m_worker_feature);
       m_supported_features.push_back (0);
 
@@ -178,6 +183,10 @@ namespace horst {
           bool supported = false;
           for (size_t feature_index = 0; feature_index < m_supported_features.size () - 1; ++feature_index) {
             if (m_supported_features[feature_index]->URI == feature_uri) {
+              if (feature_uri == m_power_of_two_block_length_feature.URI) {
+                m_fixed_block_length_required = true;
+                m_power_of_two_block_length_required = true;
+              }
               if (feature_uri == m_fixed_block_length_feature.URI || feature_uri == m_coarse_block_length_feature.URI) {
                 m_fixed_block_length_required = true;
               }
