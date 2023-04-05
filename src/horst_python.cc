@@ -56,5 +56,6 @@ PYBIND11_MODULE(horst, m)
     //.def ("lv2_internal", &horst::horst::lv2_internal)
     .def ("lv2_uris", &horst::horst::lv2_uris)
     .def ("connect", &horst::horst::connect)
+    .def ("disconnect", &horst::horst::disconnect)
   ;
 }
