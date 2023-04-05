@@ -271,12 +271,12 @@ namespace horst {
           }
           advance (m_work_responses_tail, m_work_responses.size ());
         }
+      }
 
-        lilv_instance_run (m_plugin_instance->m, nframes);
+      lilv_instance_run (m_plugin_instance->m, nframes);
 
-        if (interface->end_run) {
-          interface->end_run (m_plugin_instance->m_lv2_handle);
-        }
+      if (interface && interface->end_run) {
+        interface->end_run (m_plugin_instance->m_lv2_handle);
       }
     }
 

@@ -263,21 +263,26 @@ namespace horst
         }
       }
 
-      for (size_t port_index = 0; port_index < m_jack_input_port_indices.size (); ++port_index) {
-        m_atomic_port_values[m_jack_input_port_indices[port_index]] = m_jack_port_buffers[m_jack_input_port_indices[port_index]][0];
+      for (size_t index = 0; index < m_jack_input_port_indices.size (); ++index)
+      {
+        m_atomic_port_values[m_jack_input_port_indices[index]]
+          = m_jack_port_buffers[m_jack_input_port_indices[index]][0];
       }
 
-      for (size_t port_index = 0; port_index < m_jack_output_port_indices.size (); ++port_index) {
-        m_atomic_port_values[m_jack_output_port_indices[port_index]] = m_jack_port_buffers[m_jack_input_port_indices[port_index]][0];
+      for (size_t index = 0; index < m_jack_output_port_indices.size (); ++index)
+      {
+        m_atomic_port_values[m_jack_output_port_indices[index]]
+          = m_jack_port_buffers[m_jack_output_port_indices[index]][0];
       }
 
 #if 0
-      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
-        if (m_plugin->m_port_properties[port_index].m_is_audio && m_plugin->m_port_properties[port_index].m_is_output) {
-          DBG("output data: " << m_port_data_locations[port_index][0])
-        }
+      DBG("port values")
+      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index)
+      {
+        if (m_port_data_locations[port_index]) DBG(port_index << ": " << m_port_data_locations[port_index][0])
       }
 #endif
+
       return 0;
     }
 
