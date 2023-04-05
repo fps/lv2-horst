@@ -26,9 +26,7 @@ namespace horst {
       m_factor (factor),
       m_offset (offset)
     {
-      DBG_ENTER
       DBG(enabled << " " << channel << " " << cc << " " << factor << " " << offset)
-      DBG_EXIT
     }
   };
 
@@ -38,11 +36,11 @@ namespace horst {
     unit () :
       m_atomic_enabled (true)
     {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
 
     virtual ~unit () {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
 
     virtual std::string get_jack_client_name () {
@@ -85,22 +83,24 @@ namespace horst {
     unit_wrapper (unit_ptr unit) :
       m_unit (unit)
     {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
   };
 
   struct jack_unit : public unit
   {
+    jack_client_ptr m_jack_client;
     bool m_expose_control_ports;
 
     virtual int process_callback (jack_nframes_t nframes) = 0;
     virtual int buffer_size_callback (jack_nframes_t buffer_size) = 0;
     virtual int sample_rate_callback (jack_nframes_t sample_rate) = 0;
 
-    jack_unit (bool expose_control_ports) :
+    jack_unit (jack_client_ptr jack_client, bool expose_control_ports) :
+      m_jack_client (jack_client),
       m_expose_control_ports (expose_control_ports)
     {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
   };
 
@@ -119,8 +119,6 @@ namespace horst {
   }
 
   struct plugin_unit : public jack_unit {
-    bool m_internal_client;
-    jack_client_t *m_jack_client;
     std::vector<jack_port_t *> m_jack_ports;
     std::vector<float *> m_jack_port_buffers;
     std::vector<std::vector<float>> m_zero_buffers;
@@ -138,10 +136,8 @@ namespace horst {
     jack_nframes_t m_sample_rate;
     jack_nframes_t m_buffer_size;
 
-    plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, jack_client_t *jack_client, bool expose_control_ports) :
-      jack_unit (expose_control_ports),
-      m_internal_client (jack_client != 0),
-      m_jack_client (jack_client),
+    plugin_unit (plugin_ptr plugin, jack_client_ptr jack_client, bool expose_control_ports) :
+      jack_unit (jack_client, expose_control_ports),
       m_jack_ports (plugin->m_port_properties.size ()),
       m_jack_port_buffers (plugin->m_port_properties.size ()),
       m_zero_buffers (plugin->m_port_properties.size ()),
@@ -154,22 +150,16 @@ namespace horst {
       m_buffer_size (0)
     {
       DBG_ENTER
-      std::string client_name = jack_client_name;
-      if (jack_client_name == "") client_name = "horst:" + m_plugin->get_name ();
-      if (m_jack_client == 0) {
-        m_jack_client = jack_client_open (client_name.c_str(), JackNullOption, 0);
-      }
-      if (m_jack_client == 0) throw std::runtime_error ("horst: plugin_unit: Failed to open jack client. Name: " + jack_client_name);
 
-      m_sample_rate = jack_get_sample_rate (m_jack_client);
-      m_buffer_size = jack_get_buffer_size (m_jack_client);
+      m_sample_rate = jack_get_sample_rate (m_jack_client->m);
+      m_buffer_size = jack_get_buffer_size (m_jack_client->m);
 
       change_buffer_sizes ();
 
       // buffer_size_callback (jack_get_buffer_size (m_jack_client));
       m_plugin->instantiate (m_sample_rate, m_buffer_size);
 
-      m_jack_midi_port = jack_port_register (m_jack_client, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+      m_jack_midi_port = jack_port_register (m_jack_client->m, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
       if (m_jack_midi_port == 0) throw std::runtime_error ("horst: plugin_unit: Failed to register midi port: " + m_plugin->get_name () + ":midi-in");
 
       for (size_t index = 0; index < plugin->m_port_properties.size(); ++index) {
@@ -182,12 +172,12 @@ namespace horst {
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
           if (p.m_is_input) {
             DBG("port index: " << index << " - registering jack input port")
-            m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            m_jack_ports[index] = jack_port_register (m_jack_client->m, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
             if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
             m_jack_input_port_indices.push_back (index);
           } else {
             DBG("port index: " << index << " - registering jack output port")
-            m_jack_ports[index] = jack_port_register (m_jack_client, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            m_jack_ports[index] = jack_port_register (m_jack_client->m, p.m_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
             if (m_jack_ports[index] == 0) throw std::runtime_error (std::string ("horst: plugin_unit: Failed to register port: ") + m_plugin->get_name () + ":" + p.m_name);
             m_jack_output_port_indices.push_back (index);
           }
@@ -196,38 +186,34 @@ namespace horst {
 
       int ret;
 
-      ret = jack_set_sample_rate_callback (m_jack_client, unit_jack_sample_rate_callback, (void *)this);
+      ret = jack_set_sample_rate_callback (m_jack_client->m, unit_jack_sample_rate_callback, (void *)this);
       if (ret != 0) {
         throw std::runtime_error ("horst: plugin_unit: Failed to set sample rate callback");
       }
 
-      ret = jack_set_process_callback (m_jack_client, unit_jack_process_callback, (void *)this);
+      ret = jack_set_process_callback (m_jack_client->m, unit_jack_process_callback, (void *)this);
       if (ret != 0) {
         throw std::runtime_error ("horst: plugin_unit: Failed to set buffer size callback");
       }
 
-      ret = jack_set_buffer_size_callback (m_jack_client, unit_jack_buffer_size_callback, (void *)this);
+      ret = jack_set_buffer_size_callback (m_jack_client->m, unit_jack_buffer_size_callback, (void *)this);
       if (ret != 0) {
         throw std::runtime_error ("horst: plugin_unit: Failed to set buffer size callback");
       }
 
-      ret = jack_activate (m_jack_client);
+      ret = jack_activate (m_jack_client->m);
       if (ret != 0) {
         throw std::runtime_error ("horst: plugin_unit: Failed to activate client");
       }
     }
 
     std::string get_jack_client_name () override {
-      return jack_get_client_name (m_jack_client);
+      return jack_get_client_name (m_jack_client->m);
     }
 
     virtual ~plugin_unit () {
       DBG_ENTER
-      jack_deactivate (m_jack_client);
-
-      if (m_internal_client) return;
-
-      jack_client_close (m_jack_client);
+      jack_deactivate (m_jack_client->m);
       DBG_EXIT
     }
 
@@ -415,13 +401,13 @@ namespace horst {
     internal_plugin_unit (jack_client_ptr jack_client, jack_intclient_t jack_intclient) :
       m_jack_client (jack_client),
       m_jack_intclient (jack_intclient) {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
 
     ~internal_plugin_unit () {
       DBG_ENTER
       jack_internal_client_unload (m_jack_client->m, m_jack_intclient);
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
   };
 }

@@ -37,7 +37,7 @@ namespace horst {
       throw std::runtime_error ("horst: lv2_plugin: Port not found: " + name);
     }
 
-    virtual ~plugin_base () { DBG_EXIT }
+    virtual ~plugin_base () { DBG_ENTER_EXIT }
   };
 
   typedef std::shared_ptr<plugin_base> plugin_ptr;
@@ -46,7 +46,7 @@ namespace horst {
     plugin_ptr m;
     plugin_base_wrapper (plugin_ptr plugin = plugin_ptr()) :
       m (plugin) {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
   };
 
@@ -261,7 +261,7 @@ namespace horst {
           auto &item = m_work_responses[m_work_responses_tail];
           if (interface->work_response) {
             DBG_JACK("item: " << item.first << " " << (int)item.second[0])
-            interface->work_response (lilv_instance_get_handle (m_plugin_instance->m), item.first, &item.second[0]);
+            interface->work_response (m_plugin_instance->m_lv2_handle, item.first, &item.second[0]);
           }
           advance (m_work_responses_tail, m_work_responses.size ());
         }
@@ -269,7 +269,7 @@ namespace horst {
         lilv_instance_run (m_plugin_instance->m, nframes);
 
         if (interface->end_run) {
-          interface->end_run (lilv_instance_get_handle (m_plugin_instance->m));
+          interface->end_run (m_plugin_instance->m_lv2_handle);
         }
       }
     }
@@ -354,10 +354,10 @@ namespace horst {
           if (m_worker_interface.load ()->work) {
             DBG(m_plugin_instance->m)
             #ifdef DEBUG_HORST
-            LV2_Worker_Status res = interface->work (lilv_instance_get_handle (m_plugin_instance->m), &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
+            LV2_Worker_Status res = interface->work (m_plugin_instance->m_lv2_handle, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
             DBG("worker_thread: res: " << res)
             #else
-            interface->work (lilv_instance_get_handle (m_plugin_instance->m), &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
+            interface->work (m_plugin_instance->m_lv2_handle, &horst::worker_respond, (LV2_Worker_Respond_Handle)this, item.first, &item.second[0]);
             #endif
           }
           advance (m_work_items_tail, m_work_items.size ());

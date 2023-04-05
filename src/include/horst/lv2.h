@@ -31,11 +31,11 @@ namespace horst {
     lilv_plugins (lilv_world_ptr world) :
       m (lilv_world_get_all_plugins (world->m)),
       m_world (world) {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
 
     ~lilv_plugins () {
-      DBG_EXIT
+      DBG_ENTER_EXIT
     }
   };
 
@@ -79,6 +79,7 @@ namespace horst {
 
   struct lilv_plugin_instance {
     LilvInstance *m;
+    LV2_Handle m_lv2_handle;
     lilv_plugin_ptr m_plugin;
 
     std::vector<std::vector<float>> m_initial_port_buffers;
@@ -90,6 +91,7 @@ namespace horst {
       DBG_ENTER
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin_instance: Failed to instantiate plugin");
 
+      m_lv2_handle = lilv_instance_get_handle (m);
       DBG(m)
 
       m_initial_port_buffers.resize(lilv_plugin_get_num_ports (m_plugin->m), std::vector<float>(1024));

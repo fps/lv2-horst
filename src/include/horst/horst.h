@@ -40,6 +40,7 @@
 
 #define DBG_ENTER DBG("<- enter...")
 #define DBG_EXIT DBG("-> done.")
+#define DBG_ENTER_EXIT DBG("<- enter ... -> done")
 
 #include <horst/unit.h>
 
@@ -85,12 +86,14 @@ namespace horst {
       Dl_info dl_info;
       if (dladdr ((const void*)dli_fname_test, &dl_info)) {
         m_horst_dli_fname = dl_info.dli_fname;
+        DBG("horst_dli_fname: " << m_horst_dli_fname)
         // std::cout << "horst: horst_dli_fname: " << m_horst_dli_fname << "\n";
       } else {
         throw std::runtime_error ("horst: horst: Failed to find horst dli_fname");
       }
       if (dladdr ((const void *)jack_set_process_callback, &dl_info)) {
         m_jack_dli_fname = dl_info.dli_fname;
+        DBG("jack_dli_fname: " << m_jack_dli_fname)
         // std::cout << "horst: jack_dli_fname: " << m_jack_dli_fname << "\n";
       } else {
         throw std::runtime_error ("horst: horst: Failed to find jack dli_fname");
@@ -131,7 +134,9 @@ namespace horst {
     }
 
     unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports) {
-      return unit_ptr (new plugin_unit (plugin_ptr (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri)), jack_client_name, 0, expose_control_ports));
+      plugin_ptr p (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri));
+      jack_client_ptr j (new jack_client ((jack_client_name != "") ? jack_client_name : p->get_name (), JackNullOption));
+      return unit_ptr (new plugin_unit (p, j, expose_control_ports));
     }
 
     /*
