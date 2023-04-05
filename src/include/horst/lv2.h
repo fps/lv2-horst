@@ -86,7 +86,8 @@ namespace horst {
 
     lilv_plugin_instance (lilv_plugin_ptr plugin, double sample_rate, LV2_Feature *const *supported_features) :
       m (lilv_plugin_instantiate (plugin->m, sample_rate, supported_features)),
-      m_plugin (plugin)
+      m_plugin (plugin),
+      m_initial_port_buffers (lilv_plugin_get_num_ports (m_plugin->m), std::vector<float>(64))
     {
       DBG_ENTER
       if (m == 0) throw std::runtime_error ("horst: lilv_plugin_instance: Failed to instantiate plugin");
@@ -94,11 +95,10 @@ namespace horst {
       m_lv2_handle = lilv_instance_get_handle (m);
       DBG(m)
 
-      m_initial_port_buffers.resize(lilv_plugin_get_num_ports (m_plugin->m), std::vector<float>(1024));
       for (size_t port_index = 0; port_index < m_initial_port_buffers.size (); ++port_index) {
         lilv_instance_connect_port (m, port_index, &m_initial_port_buffers[port_index][0]);
       }
-      usleep(10000);
+
       lilv_instance_activate (m);
       DBG_EXIT
     }

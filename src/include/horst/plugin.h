@@ -243,9 +243,15 @@ namespace horst {
       m_nominal_block_length = (int32_t)buffer_size;
 
       m_plugin_instance = lilv_plugin_instance_ptr (new lilv_plugin_instance (m_lilv_plugin, sample_rate, &m_supported_features[0]));
+
       m_worker_interface = (LV2_Worker_Interface*)lilv_instance_get_extension_data (m_plugin_instance->m, LV2_WORKER__interface); 
+
       DBG("worker interface: " << m_worker_interface);
-      if (m_worker_interface) DBG((void*)(m_worker_interface.load ()->work) << " " << (void*)(m_worker_interface.load ()->work_response) << " " << (void*)(m_worker_interface.load ()->end_run));
+
+      if (m_worker_interface)
+      {
+        DBG((void*)(m_worker_interface.load ()->work) << " " << (void*)(m_worker_interface.load ()->work_response) << " " << (void*)(m_worker_interface.load ()->end_run));
+      }
       // usleep (500000);
     }
 

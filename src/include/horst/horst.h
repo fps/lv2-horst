@@ -28,7 +28,7 @@
 #include <string.h>
 
 #ifdef HORST_DEBUG
-#define DBG(x) { std::cerr << "  " << __FILE__ << ":" << __LINE__ << ":" << __PRETTY_FUNCTION__ << ": " << x << std::endl << std::flush; }
+#define DBG(x) { std::cerr << "  " << __FILE__ << ":" << __LINE__ << " " << __FUNCTION__ << "(): " << x << std::endl << std::flush; }
 //#define DBG_JACK(x) { jack_info ("%s:%s:%s: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, x); }
 #define DBG_JACK DBG
 #define DBG_ITEM(x) { std::cerr << x ; }
@@ -72,17 +72,16 @@ namespace horst {
     }
   };
 
-  struct horst {
+  struct horst : public jack_client {
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
     std::string m_horst_dli_fname;
     std::string m_jack_dli_fname;
-    jack_client_ptr m_jack_client;
 
     horst () :
+      jack_client ("horst-loader", JackNullOption),
       m_lilv_world (new lilv_world),
-      m_lilv_plugins (new lilv_plugins (m_lilv_world)),
-      m_jack_client (new jack_client ("horst-loader", JackNullOption))
+      m_lilv_plugins (new lilv_plugins (m_lilv_world))
     {
       DBG_ENTER
 
@@ -149,8 +148,10 @@ namespace horst {
     unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports)
     {
       plugin_ptr p (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri));
-      jack_client_ptr j (new jack_client ((jack_client_name != "") ? jack_client_name : p->get_name (), JackNullOption));
-      return unit_ptr (new plugin_unit (p, j, expose_control_ports));
+
+      std::string final_jack_client_name = (jack_client_name != "") ? jack_client_name : p->get_name ();
+
+      return unit_ptr (new plugin_unit (p, final_jack_client_name, expose_control_ports));
     }
 
     unit_ptr ladspa (std::string library_file_name, std::string plugin_label)
@@ -162,7 +163,7 @@ namespace horst {
     {
       for (size_t index = 0; index < cs.m.size(); ++index)
       {
-        jack_connect (m_jack_client->m, cs.m[index].m_from.c_str (), cs.m[index].m_to.c_str ());
+        jack_connect (m_jack_client, cs.m[index].m_from.c_str (), cs.m[index].m_to.c_str ());
       }
     }
 
@@ -170,7 +171,7 @@ namespace horst {
     {
       for (size_t index = 0; index < cs.m.size(); ++index)
       {
-        jack_disconnect (m_jack_client->m, cs.m[index].m_from.c_str (), cs.m[index].m_to.c_str ());
+        jack_disconnect (m_jack_client, cs.m[index].m_from.c_str (), cs.m[index].m_to.c_str ());
       }
     }
   };
