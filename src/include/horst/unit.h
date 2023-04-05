@@ -228,10 +228,11 @@ namespace horst
           if (binding.m_channel != channel) continue;
 
           // DBG("calling run (" << event.time - processed_frames <<")")
-          m_plugin->run (event.time - processed_frames);
-          processed_frames = event.time;
-
-          changed = true;
+          if (!m_plugin->m_fixed_block_length_required) {
+            m_plugin->run (event.time - processed_frames);
+            processed_frames = event.time;
+            changed = true;
+          }
 
           const float transformed_value = binding.m_offset + binding.m_factor * value;
 
