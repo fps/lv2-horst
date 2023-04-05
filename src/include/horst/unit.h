@@ -12,7 +12,8 @@ namespace horst {
 
   const int cc_mask = 128 + 32 + 16;
 
-  struct midi_binding {
+  struct midi_binding
+  {
     bool m_enabled;
     int m_channel;
     int m_cc;
@@ -30,7 +31,8 @@ namespace horst {
     }
   };
 
-  struct unit {
+  struct unit
+  {
     std::atomic<bool> m_atomic_enabled;
 
     unit () :
@@ -105,36 +107,41 @@ namespace horst {
   };
 
   extern "C" {
-    int unit_jack_process_callback (jack_nframes_t nframes, void *arg) {
+    int unit_jack_process_callback (jack_nframes_t nframes, void *arg)
+    {
       return ((jack_unit *)arg)->process_callback (nframes);
     }
 
-    int unit_jack_buffer_size_callback (jack_nframes_t buffer_size, void *arg) {
+    int unit_jack_buffer_size_callback (jack_nframes_t buffer_size, void *arg)
+    {
       return ((jack_unit *)arg)->buffer_size_callback (buffer_size);
     }
 
-    int unit_jack_sample_rate_callback (jack_nframes_t sample_rate, void *arg) {
+    int unit_jack_sample_rate_callback (jack_nframes_t sample_rate, void *arg)
+    {
       return ((jack_unit *)arg)->sample_rate_callback (sample_rate);
     }
   }
 
-  struct plugin_unit : public jack_unit {
+  struct plugin_unit : public jack_unit
+  {
     std::vector<jack_port_t *> m_jack_ports;
     std::vector<float *> m_jack_port_buffers;
+
     std::vector<std::vector<float>> m_zero_buffers;
     std::vector<float *> m_port_data_locations;
+
     std::vector<size_t> m_jack_input_port_indices;
     std::vector<size_t> m_jack_output_port_indices;
+
     jack_port_t *m_jack_midi_port;
     // TODO: allow more than one binding per port:
     std::vector<std::atomic<float>> m_atomic_port_values;
     std::vector<float> m_port_values;
+
     std::vector<std::atomic<midi_binding>> m_atomic_midi_bindings;
 
     plugin_ptr m_plugin;
-
-    jack_nframes_t m_sample_rate;
-    jack_nframes_t m_buffer_size;
 
     plugin_unit (plugin_ptr plugin, jack_client_ptr jack_client, bool expose_control_ports) :
       jack_unit (jack_client, expose_control_ports),
@@ -145,19 +152,14 @@ namespace horst {
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size ()),
       m_atomic_midi_bindings (plugin->m_port_properties.size ()),
-      m_plugin (plugin),
-      m_sample_rate (0),
-      m_buffer_size (0)
+      m_plugin (plugin)
     {
       DBG_ENTER
-
-      m_sample_rate = jack_get_sample_rate (m_jack_client->m);
-      m_buffer_size = jack_get_buffer_size (m_jack_client->m);
 
       change_buffer_sizes ();
 
       // buffer_size_callback (jack_get_buffer_size (m_jack_client));
-      m_plugin->instantiate (m_sample_rate, m_buffer_size);
+      m_plugin->instantiate (m_jack_client->m_sample_rate, m_jack_client->m_buffer_size);
 
       m_jack_midi_port = jack_port_register (m_jack_client->m, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
       if (m_jack_midi_port == 0) throw std::runtime_error ("horst: plugin_unit: Failed to register midi port: " + m_plugin->get_name () + ":midi-in");
@@ -326,20 +328,20 @@ namespace horst {
 
     void change_buffer_sizes () {
       for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index) {
-        m_zero_buffers[port_index].resize (m_buffer_size, 0);
+        m_zero_buffers[port_index].resize (m_jack_client->m_buffer_size, 0);
       }
     }
 
     virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
       DBG_ENTER
       DBG("buffer_size: " << buffer_size)
-      if (buffer_size != m_buffer_size) {
-        m_buffer_size = buffer_size;
+      if (buffer_size != m_jack_client->m_buffer_size) {
+        m_jack_client->m_buffer_size = buffer_size;
 
         change_buffer_sizes ();
 
         DBG("re-instantiating")
-        m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
+        m_plugin->instantiate ((double)m_jack_client->m_sample_rate, m_jack_client->m_buffer_size);
       }
       DBG_EXIT
       return 0;
@@ -347,11 +349,11 @@ namespace horst {
 
     virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
       DBG_ENTER
-      if (sample_rate != m_sample_rate) {
-        m_sample_rate = sample_rate;
+      if (sample_rate != m_jack_client->m_sample_rate) {
+        m_jack_client->m_sample_rate = sample_rate;
         // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
         DBG("re-instantiating")
-        m_plugin->instantiate ((double)sample_rate, m_buffer_size);
+        m_plugin->instantiate ((double)m_jack_client->m_sample_rate, m_jack_client->m_buffer_size);
       }
       DBG_EXIT
       return 0;
@@ -391,23 +393,6 @@ namespace horst {
 
     virtual port_properties get_port_properties (int index) override {
       return m_plugin->m_port_properties[index];
-    }
-  };
-
-  struct internal_plugin_unit : public unit {
-    jack_client_ptr m_jack_client;
-    jack_intclient_t m_jack_intclient;
-
-    internal_plugin_unit (jack_client_ptr jack_client, jack_intclient_t jack_intclient) :
-      m_jack_client (jack_client),
-      m_jack_intclient (jack_intclient) {
-      DBG_ENTER_EXIT
-    }
-
-    ~internal_plugin_unit () {
-      DBG_ENTER
-      jack_internal_client_unload (m_jack_client->m, m_jack_intclient);
-      DBG_ENTER_EXIT
     }
   };
 }
