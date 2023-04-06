@@ -127,11 +127,18 @@ namespace horst
 
         DBG("port: index: " << index << " \"" << p.m_name << "\"" << " min: " << p.m_minimum_value << " default: " << p.m_default_value << " max: " << p.m_maximum_value << " log: " << p.m_is_logarithmic << " input: " << p.m_is_input << " output: " << p.m_is_output << " audio: " << p.m_is_audio << " control: " << p.m_is_control << " cv: " << p.m_is_cv << " side_chain: " << p.m_is_side_chain)
 
-        if (p.m_is_control && p.m_is_input) {
-          DBG("setting default: " << p.m_default_value)
+        if (p.m_is_control)
+        {
+          if (p.m_is_input)
+          {
+            DBG("setting default: " << p.m_default_value)
 
-          m_atomic_port_values[index] = p.m_default_value;
-          m_port_values[index] = p.m_default_value;
+            m_atomic_port_values[index] = p.m_default_value;
+            m_port_values[index] = p.m_default_value;
+          }
+
+          m_port_data_locations[index] = &m_port_values[index];
+          m_plugin->connect_port (index, m_port_data_locations[index]);
         }
 
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
@@ -171,31 +178,44 @@ namespace horst
 
       bool enabled = m_atomic_enabled;
  
-      for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index) {
+      for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index)
+      {
         const port_properties &p = m_plugin->m_port_properties[index];
-        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
+        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv)
+        {
           m_jack_port_buffers[index] = (float*)jack_port_get_buffer (m_jack_ports[index], nframes);
-          if (p.m_is_input) {
-            if (enabled) {
+
+          if (p.m_is_input)
+          {
+            if (enabled)
+            {
               m_port_data_locations[index] = m_jack_port_buffers[index];
-#if 0
+              #if 0
               DBG("input data: " << m_port_data_locations[index][0])
-#endif
-            } else {
+              #endif
+            }
+            else
+            {
               m_port_data_locations[index] = &m_zero_buffers[index][0];
             }
-          } else {
+          }
+          else
+          {
             m_port_data_locations[index] = m_jack_port_buffers[index];
           }
           m_plugin->connect_port (index, m_port_data_locations[index]);
         }
-        if (p.m_is_control && !m_expose_control_ports) {
-          if (p.m_is_input) {
+        if (p.m_is_control && !m_expose_control_ports)
+        {
+          if (p.m_is_input)
+          {
             m_port_values[index] = m_atomic_port_values[index];
-          } else {
+          }
+          else
+          {
             m_atomic_port_values[index] = m_port_values[index];
           }
-          m_plugin->connect_port (index, &m_port_values[index]);
+          // m_plugin->connect_port (index, &m_port_values[index]);
         }
       }
 
