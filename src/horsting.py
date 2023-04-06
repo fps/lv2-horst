@@ -42,6 +42,9 @@ class props:
   def __dir__(self):
     return list(self.__dict__.keys()) + dir(self.p)
 
+  # def __call__(self):
+  #   return self.get_value()
+
   def get_value(self):
     return self.unit().unit.get_control_port_value(self.p.index)
 

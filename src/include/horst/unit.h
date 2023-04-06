@@ -138,7 +138,6 @@ namespace horst
           }
 
           m_port_data_locations[index] = &m_port_values[index];
-          m_plugin->connect_port (index, m_port_data_locations[index]);
         }
 
         if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv) {
@@ -159,12 +158,27 @@ namespace horst
         }
       }
 
+      connect_control_ports ();
+
       DBG("activating jack client")
       int ret = jack_activate (m_jack_client);
       if (ret != 0) {
         throw std::runtime_error ("horst: plugin_unit: Failed to activate client");
       }
       DBG_EXIT
+    }
+
+    void connect_control_ports ()
+    {
+      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index)
+      {
+        const port_properties &p = m_plugin->m_port_properties[port_index];
+
+        if (p.m_is_control)
+        {
+          m_plugin->connect_port (port_index, m_port_data_locations[port_index]);
+        }
+      }
     }
 
     virtual ~plugin_unit () {
@@ -328,6 +342,7 @@ namespace horst
 
         DBG("re-instantiating")
         m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
+        connect_control_ports ();
       }
       DBG_EXIT
       return 0;
@@ -340,6 +355,7 @@ namespace horst
         // std::cout << "sample rate callback. sample rate: " << sample_rate << "\n";
         DBG("re-instantiating")
         m_plugin->instantiate ((double)m_sample_rate, m_buffer_size);
+        connect_control_ports ();
       }
       DBG_EXIT
       return 0;
