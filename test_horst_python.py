@@ -1,4 +1,4 @@
-import horst
+import horsting as h
 import time 
 
 uris2 = [
@@ -24,16 +24,7 @@ uris = [
   "https://ca9.eu/lv2/bolliedelay",
   "http://calf.sourceforge.net/plugins/Saturator",
   "http://calf.sourceforge.net/plugins/Limiter",
-  "http://fps.io/plugins/state-variable-filter-v2",
-  "http://fps.io/plugins/clipping.tanh",
-  "http://fps.io/plugins/relative_dynamics",
-  # "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
-  "http://calf.sourceforge.net/plugins/HaasEnhancer",
-  "http://calf.sourceforge.net/plugins/Reverb",
-  "http://plugin.org.uk/swh-plugins/amp"
 ]
-
-h = horst.horst()
 
 units = []
 
@@ -41,9 +32,10 @@ index = 0
 for uri in uris:
   try:
     print("Adding: " + uri)
-    units.append(h.lv2(uri, str(index)+"_"+uri, False))
+    units.append(h.lv2(uri))
   except Exception as e:
     print ("Failed to create plugin " + uri + ": " + str(e))
     pass
   index = index + 1
 
+h.connect(h.system, *units, h.system)
