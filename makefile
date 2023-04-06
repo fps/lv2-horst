@@ -7,8 +7,11 @@ HORST_HEADERS = $(wildcard src/include/horst/*.h) $(wildcard src/include/horst/l
 HORST_SOURCES = ${wildcard src/*.cc}
 HORST_OBJECTS = ${HORST_SOURCES:.cc=.o}
 
+OPTIMIZATION_FLAGS = -O3 
+
+ifeq ($(DEBUG),1)
 OPTIMIZATION_FLAGS = -O1 -g -pg -DHORST_DEBUG -fstack-protector -fstack-protector-strong -fstack-protector-all -fstack-protector-explicit
-# OPTIMIZATION_FLAGS = -O3 
+endif
 
 PYTHON_CXXFLAGS = `python3 -m pybind11 --includes` `python3-config --cflags`  
 PYTHON_LDFLAGS = `python3-config --ldflags --embed` 
