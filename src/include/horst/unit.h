@@ -218,6 +218,7 @@ namespace horst
     virtual ~plugin_unit () {
       DBG_ENTER
       jack_deactivate (m_jack_client);
+      jack_client_close (m_jack_client);
       DBG_EXIT
     }
 

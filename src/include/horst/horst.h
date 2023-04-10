@@ -14,7 +14,6 @@
 #include <jack/jack.h>
 #include <jack/intclient.h>
 #include <jack/midiport.h>
-#include <jack/control.h>
 
 #include <lilv/lilv.h>
 #include <lv2/options/options.h>
