@@ -72,18 +72,22 @@ namespace horst {
     }
   };
 
-  struct horst : public jack_client {
+  struct horst 
+  {
+    jack_client_t *m_jack_client;
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
     std::string m_horst_dli_fname;
     std::string m_jack_dli_fname;
 
     horst () :
-      jack_client ("horst-loader", JackNullOption),
+      m_jack_client (jack_client_open ("horst", JackNullOption, 0)),
       m_lilv_world (new lilv_world),
       m_lilv_plugins (new lilv_plugins (m_lilv_world))
     {
       DBG_ENTER
+
+      if (m_jack_client == 0) throw std::runtime_error ("horst: horst: Failed to open jack client: horst");
 
       Dl_info dl_info;
 
@@ -129,6 +133,8 @@ namespace horst {
 
     ~horst ()
     {
+      DBG_ENTER
+      jack_client_close (m_jack_client);
       DBG_EXIT
     }
 
@@ -147,7 +153,7 @@ namespace horst {
 
     unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports)
     {
-      plugin_ptr p (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri));
+      lv2_plugin_ptr p (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri));
 
       std::string final_jack_client_name = (jack_client_name != "") ? jack_client_name : p->get_name ();
 

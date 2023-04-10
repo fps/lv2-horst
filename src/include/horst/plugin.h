@@ -399,7 +399,7 @@ namespace horst {
           advance (m_work_items_tail, m_work_items.size ());
         }
         // std::cout << "horst: lv2_plugin: worker_thread ()\n";
-        usleep (1000);
+        usleep (10000);
       }
       DBG_EXIT
       return 0;

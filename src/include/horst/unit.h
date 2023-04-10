@@ -26,13 +26,14 @@ namespace horst
     }
   };
 
-  struct unit : jack_client
+  struct unit 
   {
     std::atomic<bool> m_atomic_enabled;
+    std::atomic<bool> m_updates_enabled;
 
-    unit (const std::string &jack_client_name) :
-      jack_client (jack_client_name, JackNullOption),
-      m_atomic_enabled (true)
+    unit () :
+      m_atomic_enabled (true),
+      m_updates_enabled (false)
     {
       DBG_ENTER_EXIT
     }
@@ -68,6 +69,10 @@ namespace horst
     virtual void set_enabled (bool enabled) {
       m_atomic_enabled = enabled;
     }
+
+    virtual std::string get_jack_client_name () const {
+      throw std::runtime_error ("horst: unit: not implemented yet");
+    }
   };
 
   typedef std::shared_ptr<unit> unit_ptr;
@@ -81,11 +86,23 @@ namespace horst
     }
   };
 
+  extern "C" 
+  {
+    int plugin_unit_sample_rate_callback (jack_nframes_t nframes, void *arg);
+    int plugin_unit_buffer_size_callback (jack_nframes_t nframes, void *arg);
+    int plugin_unit_process_callback (jack_nframes_t nframes, void *arg);
+    void plugin_unit_thread_init_callback (void *arg);
+  }
+
   struct plugin_unit : public unit
   {
-    plugin_ptr m_plugin;
+    jack_client_t *m_jack_client;
+    jack_nframes_t m_sample_rate;
+    jack_nframes_t m_buffer_size;
 
-    bool m_expose_control_ports;
+    lv2_plugin_ptr m_plugin;
+
+    const bool m_expose_control_ports;
 
     std::vector<jack_port_t *> m_jack_ports;
     std::vector<float *> m_jack_port_buffers;
@@ -103,8 +120,8 @@ namespace horst
 
     std::vector<std::atomic<midi_binding>> m_atomic_midi_bindings;
 
-    plugin_unit (plugin_ptr plugin, const std::string &jack_client_name, bool expose_control_ports) :
-      unit (jack_client_name),
+    plugin_unit (lv2_plugin_ptr plugin, const std::string &jack_client_name, bool expose_control_ports) :
+      m_jack_client (jack_client_open (jack_client_name.c_str (), JackNullOption, 0)),
       m_plugin (plugin),
       m_expose_control_ports (expose_control_ports),
       m_jack_ports (plugin->m_port_properties.size (), 0),
@@ -116,6 +133,11 @@ namespace horst
       m_atomic_midi_bindings (plugin->m_port_properties.size ())
     {
       DBG_ENTER
+
+      if (m_jack_client == 0) throw std::runtime_error ("horst: plugin_unit: Failed to open jack client: " + jack_client_name);
+
+      m_buffer_size = jack_get_buffer_size (m_jack_client);
+      m_sample_rate = jack_get_sample_rate (m_jack_client);
 
       m_plugin->instantiate (m_sample_rate, m_buffer_size);
 
@@ -160,11 +182,23 @@ namespace horst
 
       connect_control_ports ();
 
+      DBG("setting callbacks")
+      int ret;
+      ret = jack_set_sample_rate_callback (m_jack_client, plugin_unit_sample_rate_callback, (void*)this);
+      if (ret != 0) throw std::runtime_error ("horst: plugin_unit: Failed to set sample rate callback");
+
+      ret = jack_set_buffer_size_callback (m_jack_client, plugin_unit_buffer_size_callback, (void*)this);
+      if (ret != 0) throw std::runtime_error ("horst: plugin_unit: Failed to set buffer size callback");
+
+      ret = jack_set_process_callback (m_jack_client, plugin_unit_process_callback, (void*)this);
+      if (ret != 0) throw std::runtime_error ("horst: plugin_unit: Failed to set process callback");
+
+      ret = jack_set_thread_init_callback (m_jack_client, plugin_unit_thread_init_callback, (void*)this);
+      if (ret != 0) throw std::runtime_error ("horst: plugin_unit: Failed to set thread init callback");
+
       DBG("activating jack client")
-      int ret = jack_activate (m_jack_client);
-      if (ret != 0) {
-        throw std::runtime_error ("horst: plugin_unit: Failed to activate client");
-      }
+      ret = jack_activate (m_jack_client);
+      if (ret != 0) throw std::runtime_error ("horst: plugin_unit: Failed to activate client");
       DBG_EXIT
     }
 
@@ -187,56 +221,70 @@ namespace horst
       DBG_EXIT
     }
 
-    virtual int process_callback (jack_nframes_t nframes) override {
-      if (!m_plugin) return 0;
+    inline int process_callback (jack_nframes_t nframes) 
+    {
+      // if (!m_plugin) return 0;
 
-      bool enabled = m_atomic_enabled;
+      // const bool enabled = m_atomic_enabled;
+      // const bool updates_enabled = m_updates_enabled;
+      const bool enabled = true;
+      const bool updates_enabled = false;
+
+      for (size_t index = 0; index < m_jack_input_port_indices.size (); ++index)
+      {
+        const size_t port_index = m_jack_input_port_indices[index];
+        m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
+      }
+
+      for (size_t index = 0; index < m_jack_output_port_indices.size (); ++index)
+      {
+        const size_t port_index = m_jack_output_port_indices[index];
+        m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
+      }
  
+      #if 0
       for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index)
       {
         const port_properties &p = m_plugin->m_port_properties[index];
-        if ((p.m_is_control && m_expose_control_ports) || p.m_is_audio || p.m_is_cv)
+        if (p.m_is_audio || (m_expose_control_ports && p.m_is_control) || p.m_is_cv)
         {
           m_jack_port_buffers[index] = (float*)jack_port_get_buffer (m_jack_ports[index], nframes);
+          m_port_data_locations[index] = m_jack_port_buffers[index];
 
-          if (p.m_is_input)
+          if (p.m_is_input && !enabled)
           {
-            if (enabled)
+            m_port_data_locations[index] = &m_zero_buffers[index][0];
+          }
+
+          m_plugin->connect_port (index, m_port_data_locations[index]);
+        }
+      }
+      #endif
+
+      if (updates_enabled)
+      {
+        for (size_t index = 0; index < m_plugin->m_port_properties.size (); ++index)
+        {
+          const port_properties &p = m_plugin->m_port_properties[index];
+          if (p.m_is_control && !m_expose_control_ports)
+          {
+            if (p.m_is_input)
             {
-              m_port_data_locations[index] = m_jack_port_buffers[index];
-              #if 0
-              DBG("input data: " << m_port_data_locations[index][0])
-              #endif
+              m_port_values[index] = m_atomic_port_values[index];
             }
             else
             {
-              m_port_data_locations[index] = &m_zero_buffers[index][0];
+              m_atomic_port_values[index] = m_port_values[index];
             }
           }
-          else
-          {
-            m_port_data_locations[index] = m_jack_port_buffers[index];
-          }
-          m_plugin->connect_port (index, m_port_data_locations[index]);
-        }
-        if (p.m_is_control && !m_expose_control_ports)
-        {
-          if (p.m_is_input)
-          {
-            m_port_values[index] = m_atomic_port_values[index];
-          }
-          else
-          {
-            m_atomic_port_values[index] = m_port_values[index];
-          }
-          // m_plugin->connect_port (index, &m_port_values[index]);
         }
       }
+      
+      jack_nframes_t processed_frames = 0;
 
+      #if 0
       void *midi_port_buffer = jack_port_get_buffer (m_jack_midi_port, nframes);
       int event_count = jack_midi_get_event_count (midi_port_buffer);
-
-      jack_nframes_t processed_frames = 0;
 
       for (int event_index = 0; event_index < event_count; ++event_index) {
         jack_midi_event_t event;
@@ -262,7 +310,7 @@ namespace horst
           if (binding.m_channel != channel) continue;
 
           // DBG("calling run (" << event.time - processed_frames <<")")
-          if (!m_plugin->m_fixed_block_length_required) {
+          if (!m_plugin->m_fixed_block_length_required && processed_frames != event.time) {
             m_plugin->run (event.time - processed_frames);
             processed_frames = event.time;
             changed = true;
@@ -286,6 +334,7 @@ namespace horst
           }
         }
       }
+      #endif
 
       // DBG("calling run (" << nframes - processed_frames << ")")
       m_plugin->run (nframes - processed_frames);
@@ -298,25 +347,20 @@ namespace horst
         }
       }
 
-      for (size_t index = 0; index < m_jack_input_port_indices.size (); ++index)
+      if (updates_enabled) 
       {
-        m_atomic_port_values[m_jack_input_port_indices[index]]
-          = m_jack_port_buffers[m_jack_input_port_indices[index]][0];
+        for (size_t index = 0; index < m_jack_input_port_indices.size (); ++index)
+        {
+          m_atomic_port_values[m_jack_input_port_indices[index]]
+            = m_jack_port_buffers[m_jack_input_port_indices[index]][0];
+        }
+  
+        for (size_t index = 0; index < m_jack_output_port_indices.size (); ++index)
+        {
+          m_atomic_port_values[m_jack_output_port_indices[index]]
+            = m_jack_port_buffers[m_jack_output_port_indices[index]][0];
+        }
       }
-
-      for (size_t index = 0; index < m_jack_output_port_indices.size (); ++index)
-      {
-        m_atomic_port_values[m_jack_output_port_indices[index]]
-          = m_jack_port_buffers[m_jack_output_port_indices[index]][0];
-      }
-
-#if 0
-      DBG("port values")
-      for (size_t port_index = 0; port_index < m_plugin->m_port_properties.size (); ++port_index)
-      {
-        if (m_port_data_locations[port_index]) DBG(port_index << ": " << m_port_data_locations[port_index][0])
-      }
-#endif
 
       return 0;
     }
@@ -332,7 +376,7 @@ namespace horst
       }
     }
 
-    virtual int buffer_size_callback (jack_nframes_t buffer_size) override {
+    int buffer_size_callback (jack_nframes_t buffer_size) {
       DBG_ENTER
       DBG("buffer_size: " << buffer_size)
       if (buffer_size != m_buffer_size) {
@@ -348,7 +392,7 @@ namespace horst
       return 0;
     }
 
-    virtual int sample_rate_callback (jack_nframes_t sample_rate) override {
+    int sample_rate_callback (jack_nframes_t sample_rate) {
       DBG_ENTER
       if (sample_rate != m_sample_rate) {
         m_sample_rate = sample_rate;
@@ -396,5 +440,47 @@ namespace horst
     virtual port_properties get_port_properties (int index) override {
       return m_plugin->m_port_properties[index];
     }
+
+    virtual std::string get_jack_client_name () const {
+      return jack_get_client_name (m_jack_client);
+    }
   };
+  
+  extern "C" 
+  {
+    int plugin_unit_sample_rate_callback (jack_nframes_t nframes, void *arg)
+    {
+      return ((plugin_unit*)arg)->sample_rate_callback (nframes);
+    }
+
+    int plugin_unit_buffer_size_callback (jack_nframes_t nframes, void *arg)
+    {
+      return ((plugin_unit*)arg)->buffer_size_callback (nframes);
+    }
+
+    int plugin_unit_process_callback (jack_nframes_t nframes, void *arg)
+    {
+      return ((plugin_unit*)arg)->process_callback (nframes);
+    }
+    
+    void plugin_unit_thread_init_callback (void *arg)
+    {
+/* Taken from cras/src/dsp/dsp_util.c in Chromium OS code. * Copyright (c) 
+ 2013 The Chromium OS Authors. */
+      #if defined(__i386__) || defined(__x86_64__)
+        unsigned int mxcsr; mxcsr = __builtin_ia32_stmxcsr(); 
+        __builtin_ia32_ldmxcsr(mxcsr | 0x8040);
+      #elif defined(__aarch64__)
+        uint64_t cw; __asm__ __volatile__ ( "mrs %0, fpcr \n" "orr %0, %0, #0x1000000 \n"
+                "msr fpcr, %0 \n" "isb \n"
+                : "=r"(cw) :: "memory");
+      #elif defined(__arm__)
+        uint32_t cw; __asm__ __volatile__ ( "vmrs %0, fpscr \n" "orr %0, %0, #0x1000000 \n"
+                "vmsr fpscr, %0 \n"
+                : "=r"(cw) :: "memory");
+      #else 
+         DBG("Don't know how to disable denormals. Performace may suffer.")
+      #endif
+    }
+  }
 }
