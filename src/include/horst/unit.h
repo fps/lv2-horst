@@ -33,7 +33,7 @@ namespace horst
 
     unit () :
       m_atomic_enabled (true),
-      m_updates_enabled (false)
+      m_updates_enabled (true)
     {
       DBG_ENTER_EXIT
     }
@@ -126,7 +126,6 @@ namespace horst
       m_expose_control_ports (expose_control_ports),
       m_jack_ports (plugin->m_port_properties.size (), 0),
       m_jack_port_buffers (plugin->m_port_properties.size (), 0),
-      m_zero_buffers (plugin->m_port_properties.size (), std::vector<float> (m_buffer_size, 0)),
       m_port_data_locations (plugin->m_port_properties.size (), 0),
       m_atomic_port_values (plugin->m_port_properties.size ()),
       m_port_values (plugin->m_port_properties.size (), 0),
@@ -138,6 +137,7 @@ namespace horst
 
       m_buffer_size = jack_get_buffer_size (m_jack_client);
       m_sample_rate = jack_get_sample_rate (m_jack_client);
+      m_zero_buffers = std::vector<std::vector<float>> (m_plugin->m_port_properties.size (), std::vector<float> (m_buffer_size, 0));
 
       m_plugin->instantiate (m_sample_rate, m_buffer_size);
 
@@ -224,26 +224,41 @@ namespace horst
     inline int process_callback (jack_nframes_t nframes) 
     {
       // if (!m_plugin) return 0;
+      const size_t number_of_ports = m_plugin->m_port_properties.size ();
+      const size_t number_of_jack_input_ports = m_jack_input_port_indices.size ();
+      const size_t number_of_jack_output_ports = m_jack_output_port_indices.size ();
 
-      // const bool enabled = m_atomic_enabled;
-      // const bool updates_enabled = m_updates_enabled;
-      const bool enabled = true;
-      const bool updates_enabled = false;
+      const bool enabled = m_atomic_enabled;
+      const bool updates_enabled = m_updates_enabled;
+      // const bool enabled = true;
+      // const bool updates_enabled = false;
 
-      for (size_t index = 0; index < m_jack_input_port_indices.size (); ++index)
+      #if 0
+      if (enabled)
       {
-        const size_t port_index = m_jack_input_port_indices[index];
-        m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
+        for (size_t index = 0; index < number_of_jack_input_ports; ++index)
+        {
+          const size_t port_index = m_jack_input_port_indices[index];
+          m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
+        }
+      }
+      else
+      {
+        for (size_t index = 0; index < number_of_jack_input_ports; ++index)
+        {
+          const size_t port_index = m_jack_input_port_indices[index];
+          m_plugin->connect_port (port_index, &m_zero_buffers[port_index][0]);
+        }
       }
 
-      for (size_t index = 0; index < m_jack_output_port_indices.size (); ++index)
+      for (size_t index = 0; index < number_of_jack_output_ports; ++index)
       {
         const size_t port_index = m_jack_output_port_indices[index];
         m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
       }
+      #endif
  
-      #if 0
-      for (size_t index = 0; index < m_plugin->m_port_properties.size(); ++index)
+      for (size_t index = 0; index < number_of_ports; ++index)
       {
         const port_properties &p = m_plugin->m_port_properties[index];
         if (p.m_is_audio || (m_expose_control_ports && p.m_is_control) || p.m_is_cv)
@@ -259,11 +274,10 @@ namespace horst
           m_plugin->connect_port (index, m_port_data_locations[index]);
         }
       }
-      #endif
 
       if (updates_enabled)
       {
-        for (size_t index = 0; index < m_plugin->m_port_properties.size (); ++index)
+        for (size_t index = 0; index < number_of_ports; ++index)
         {
           const port_properties &p = m_plugin->m_port_properties[index];
           if (p.m_is_control && !m_expose_control_ports)
@@ -340,7 +354,7 @@ namespace horst
       m_plugin->run (nframes - processed_frames);
 
       if (!enabled) {
-        for (size_t port_index = 0; port_index < std::min (m_jack_input_port_indices.size (), m_jack_output_port_indices.size ()); ++port_index) {
+        for (size_t port_index = 0; port_index < std::min (number_of_jack_input_ports, number_of_jack_output_ports); ++port_index) {
           for (jack_nframes_t frame_index = 0; frame_index < nframes; ++frame_index) {
             m_jack_port_buffers[m_jack_output_port_indices[port_index]][frame_index] += m_jack_port_buffers[m_jack_input_port_indices[port_index]][frame_index];
           }
@@ -349,13 +363,13 @@ namespace horst
 
       if (updates_enabled) 
       {
-        for (size_t index = 0; index < m_jack_input_port_indices.size (); ++index)
+        for (size_t index = 0; index < number_of_jack_input_ports; ++index)
         {
           m_atomic_port_values[m_jack_input_port_indices[index]]
             = m_jack_port_buffers[m_jack_input_port_indices[index]][0];
         }
   
-        for (size_t index = 0; index < m_jack_output_port_indices.size (); ++index)
+        for (size_t index = 0; index < number_of_jack_output_ports; ++index)
         {
           m_atomic_port_values[m_jack_output_port_indices[index]]
             = m_jack_port_buffers[m_jack_output_port_indices[index]][0];
@@ -465,8 +479,9 @@ namespace horst
     
     void plugin_unit_thread_init_callback (void *arg)
     {
-/* Taken from cras/src/dsp/dsp_util.c in Chromium OS code. * Copyright (c) 
- 2013 The Chromium OS Authors. */
+      DBG_ENTER
+      /* Taken from cras/src/dsp/dsp_util.c in Chromium OS code. * Copyright (c) 
+        2013 The Chromium OS Authors. */
       #if defined(__i386__) || defined(__x86_64__)
         unsigned int mxcsr; mxcsr = __builtin_ia32_stmxcsr(); 
         __builtin_ia32_ldmxcsr(mxcsr | 0x8040);
@@ -481,6 +496,7 @@ namespace horst
       #else 
          DBG("Don't know how to disable denormals. Performace may suffer.")
       #endif
+      DBG_EXIT
     }
   }
 }

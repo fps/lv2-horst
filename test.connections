@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aj-snapshot>
+<jack>
+  <client name="system">
+    <port name="capture_1">
+      <connection port="Calf Gate:in_l" />
+    </port>
+    <port name="capture_2">
+      <connection port="Calf Gate:in_r" />
+    </port>
+  </client>
+  <client name="Calf Gate">
+    <port name="out_l">
+      <connection port="Calf Compressor:in_l" />
+    </port>
+    <port name="out_r">
+      <connection port="Calf Compressor:in_r" />
+    </port>
+  </client>
+  <client name="Calf Compressor">
+    <port name="out_l">
+      <connection port="clipping.tanh:in" />
+    </port>
+    <port name="out_r" />
+  </client>
+  <client name="clipping.tanh">
+    <port name="out">
+      <connection port="Calf Envelope Filter:in_l" />
+    </port>
+  </client>
+  <client name="Calf Envelope Filter">
+    <port name="out_l">
+      <connection port="state-variable-filter-v2:in" />
+    </port>
+    <port name="out_r" />
+  </client>
+  <client name="state-variable-filter-v2">
+    <port name="out">
+      <connection port="GxTubeScreamer:in" />
+    </port>
+  </client>
+  <client name="GxTubeScreamer">
+    <port name="out">
+      <connection port="Open Big Muff:In" />
+    </port>
+  </client>
+  <client name="Open Big Muff">
+    <port name="Out1">
+      <connection port="state-variable-filter-v2-01:in" />
+    </port>
+  </client>
+  <client name="state-variable-filter-v2-01">
+    <port name="out">
+      <connection port="GxCabinet:in" />
+    </port>
+  </client>
+  <client name="GxCabinet">
+    <port name="out">
+      <connection port="MDA Leslie:left_in" />
+    </port>
+  </client>
+  <client name="MDA Leslie">
+    <port name="left_out">
+      <connection port="Calf Multi Chorus:in_l" />
+    </port>
+    <port name="right_out">
+      <connection port="Calf Multi Chorus:in_r" />
+    </port>
+  </client>
+  <client name="Calf Multi Chorus">
+    <port name="out_l">
+      <connection port="Calf Phaser:in_l" />
+    </port>
+    <port name="out_r">
+      <connection port="Calf Phaser:in_r" />
+    </port>
+  </client>
+  <client name="Calf Phaser">
+    <port name="out_l">
+      <connection port="Calf Reverb:in_l" />
+    </port>
+    <port name="out_r">
+      <connection port="Calf Reverb:in_r" />
+    </port>
+  </client>
+  <client name="Calf Reverb">
+    <port name="out_l">
+      <connection port="Calf Reverb-01:in_l" />
+    </port>
+    <port name="out_r">
+      <connection port="Calf Reverb-01:in_r" />
+    </port>
+  </client>
+  <client name="Calf Reverb-01">
+    <port name="out_l">
+      <connection port="MDA DubDelay:left_in" />
+    </port>
+    <port name="out_r">
+      <connection port="MDA DubDelay:right_in" />
+    </port>
+  </client>
+  <client name="MDA DubDelay">
+    <port name="left_out">
+      <connection port="Bollie Delay:in_l" />
+    </port>
+    <port name="right_out">
+      <connection port="Bollie Delay:in_r" />
+    </port>
+  </client>
+  <client name="Bollie Delay">
+    <port name="out_l">
+      <connection port="Calf Saturator:in_l" />
+    </port>
+    <port name="out_r">
+      <connection port="Calf Saturator:in_r" />
+    </port>
+  </client>
+  <client name="Calf Saturator">
+    <port name="out_l">
+      <connection port="Calf Limiter:in_l" />
+    </port>
+    <port name="out_r">
+      <connection port="Calf Limiter:in_r" />
+    </port>
+  </client>
+  <client name="Calf Limiter">
+    <port name="out_l">
+      <connection port="system:playback_1" />
+    </port>
+    <port name="out_r">
+      <connection port="system:playback_2" />
+    </port>
+  </client>
+</jack>
+</aj-snapshot>
