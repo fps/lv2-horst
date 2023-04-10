@@ -21,13 +21,13 @@ CXXFLAGS += -fPIC -std=c++20 -Isrc/include -Wall -pedantic `pkg-config lilv-0 --
 LDFLAGS += `pkg-config lilv-0 --libs` -ljack -latomic -pthread
 
 src/test_horst: src/test_horst.cc $(HORST_HEADERS) makefile
-	g++ -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)
+	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS) 
 
 src/test_horst2: src/test_horst2.cc $(HORST_HEADERS) makefile
-	g++ -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)
+	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 src/horst_cli: src/horst_cli.cc $(HORST_HEADERS) makefile
-	g++ -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)
+	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS) 
 
 src/horst.so: src/horst_python.cc $(HORST_HEADERS) makefile
 	g++ -shared -o $@ $(CXXFLAGS) $(PYTHON_CXXFLAGS) $< $(LDFLAGS) $(PYTHON_LDFLAGS)
