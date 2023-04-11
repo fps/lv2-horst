@@ -297,7 +297,6 @@ namespace horst
       
       jack_nframes_t processed_frames = 0;
 
-      #if 0
       void *midi_port_buffer = jack_port_get_buffer (m_jack_midi_port, nframes);
       int event_count = jack_midi_get_event_count (midi_port_buffer);
 
@@ -349,7 +348,6 @@ namespace horst
           }
         }
       }
-      #endif
 
       // DBG("calling run (" << nframes - processed_frames << ")")
       m_plugin->run (nframes - processed_frames);
