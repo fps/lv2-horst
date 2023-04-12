@@ -36,7 +36,7 @@ src/horst_internal.so: src/horst_internal.cc $(HORST_HEADERS) makefile
 	g++ -shared -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 clean:
-	rm -f src/*.o src/horst.so src/horst_internal.so src/test_horst src/test_horst2
+	rm -f src/*.o src/horst.so src/horst_internal.so src/test_horst src/test_horst2 src/horst_cli
 
 PREFIX ?= /usr/local
 
@@ -44,4 +44,5 @@ install: all
 	install -d $(PREFIX)/lib/horst
 	install -d $(PREFIX)/bin
 	install src/horst.so $(PREFIX)/lib/horst
+	install src/horsting.py $(PREFIX)/lib/horst
 	install src/horst_cli $(PREFIX)/bin
