@@ -17,8 +17,8 @@ endif
 PYTHON_CXXFLAGS = `python3 -m pybind11 --includes` `python3-config --cflags`  
 PYTHON_LDFLAGS = `python3-config --ldflags --embed` 
 
-CXXFLAGS += -fPIC -std=c++20 -Isrc/include -Wall -pedantic `pkg-config lilv-0 --cflags` `pkg-config lv2 --cflags` -pthread $(OPTIMIZATION_FLAGS) 
-LDFLAGS += `pkg-config lilv-0 --libs` -ljack -latomic -pthread
+CXXFLAGS += -fPIC -std=c++20 -Isrc/include -Wall -pedantic `pkg-config lilv-0 lv2 jack --cflags` -pthread $(OPTIMIZATION_FLAGS) 
+LDFLAGS += `pkg-config lilv-0 jack --libs` -latomic -pthread
 
 src/test_horst: src/test_horst.cc $(HORST_HEADERS) makefile
 	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS) 
@@ -40,5 +40,8 @@ clean:
 
 PREFIX ?= /usr/local
 
-install:
-	install -d 
+install: all
+	install -d $(PREFIX)/lib/horst
+	install -d $(PREFIX)/bin
+	install src/horst.so $(PREFIX)/lib/horst
+	install src/horst_cli $(PREFIX)/bin
