@@ -1,6 +1,6 @@
 # Available at setup time due to pyproject.toml
-from pybind11.setup_helpers import Pybind11Extension, build_ext
-from setuptools import setup
+# from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup, Extension
 import pkgconfig
 
 __version__ = "0.0.1"
@@ -14,10 +14,10 @@ __version__ = "0.0.1"
 #   Sort input source files if you glob sources to ensure bit-for-bit
 #   reproducible builds (https://github.com/pybind/python_example/pull/53)
 
-pkgs = pkgconfig.parse('lilv-0 lv2 jack')
+# pkgs = pkgconfig.parse('lilv-0 lv2 jack')
 
 ext_modules = [
-    Pybind11Extension("horst",
+    Extension("horst",
         ["src/horst_python.cc"],
         # Example: passing in the version to the compiled code
         define_macros = [('VERSION_INFO', __version__)],
@@ -27,6 +27,8 @@ ext_modules = [
         libraries = pkgs['libraries']
         ),
 ]
+
+pkgconfig.configure_extension(ext_modules[0])
 
 setup(
     name="horst",
