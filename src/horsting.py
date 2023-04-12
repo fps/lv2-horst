@@ -82,29 +82,9 @@ class unit(with_ports):
 
     self.ports = dict_with_attributes()
 
-    self.audio = dict_with_attributes()
-    self.audio_in = dict_with_attributes()
-    self.audio_out = dict_with_attributes()
-
-    self.side_chain = dict_with_attributes()
-    self.side_chain_in = dict_with_attributes()
-    self.side_Chain_out = dict_with_attributes()
-
-    self.control = dict_with_attributes()
-    self.control_in = dict_with_attributes()
-    self.control_out = dict_with_attributes()
-
-    self.cv = dict_with_attributes()
-    self.cv_in = dict_with_attributes()
-    self.cv_out = dict_with_attributes()
-
-    audio_port_index = 0
-    audio_in_port_index = 0
-    audio_out_port_index = 0
-    
-    side_chain_port_index = 0
-    side_chain_in_port_index = 0
-    side_chain_out_port_index = 0
+    self.audio = []
+    self.audio_in = []
+    self.audio_out = []
 
     for index in range (self.unit.get_number_of_ports ()):
       p = props (self, index)
@@ -113,20 +93,14 @@ class unit(with_ports):
       self.ports[index] = p
 
       if p.is_audio and not p.is_side_chain:
-        self.audio[audio_port_index] = p
-        setattr(self.audio, p.name + '_', p)
-        audio_port_index += 1
+        self.audio.append(p)
 
         if p.is_input:
-          self.audio_in[audio_in_port_index] = p
-          setattr(self.audio_in, p.name + '_', p)
-          audio_in_port_index += 1
-          
-        if p.is_output:
-          self.audio_out[audio_out_port_index] = p
-          setattr(self.audio_out, p.name + '_', p)
-          audio_out_port_index += 1
+          self.audio_in.append(p)
 
+        if p.is_output:
+          self.audio_out.append(p)
+          
   def __getitem__(self, index):
     return self.ports[index]
 
@@ -202,3 +176,19 @@ def connect(*args):
   for c in cs:
     hcs.add(c[0], c[1])
   the_horst.connect(hcs)
+
+from itertools import chain
+
+class parallel (with_ports):
+  def __init__(self, units):
+    self.units = units
+    self.audio_in = list(chain.from_iterable([u.audio_in for u in units]))
+    self.audio_out = list(chain.from_iterable([u.audio_out for u in units]))
+
+class serial (with_ports):
+  def __init__(self, units):
+    self.units = units
+    self.audio_in = units[0].audio_in
+    self.audio_out = units[-1].audio_out
+
+       
