@@ -26,66 +26,6 @@ namespace horst
     }
   };
 
-  struct unit 
-  {
-    std::atomic<bool> m_atomic_enabled;
-    std::atomic<bool> m_updates_enabled;
-
-    unit () :
-      m_atomic_enabled (true),
-      m_updates_enabled (true)
-    {
-      DBG_ENTER_EXIT
-    }
-
-    virtual ~unit () {
-      DBG_ENTER_EXIT
-    }
-
-    virtual void set_control_port_value (size_t index, float value) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual float get_control_port_value (size_t index) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual void set_midi_binding (size_t index, const midi_binding &binding) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual midi_binding get_midi_binding (size_t index) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual int get_number_of_ports () {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual port_properties get_port_properties (int index) {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-
-    virtual void set_enabled (bool enabled) {
-      m_atomic_enabled = enabled;
-    }
-
-    virtual std::string get_jack_client_name () const {
-      throw std::runtime_error ("horst: unit: not implemented yet");
-    }
-  };
-
-  typedef std::shared_ptr<unit> unit_ptr;
-
-  struct unit_wrapper {
-    unit_ptr m_unit;
-    unit_wrapper (unit_ptr unit) :
-      m_unit (unit)
-    {
-      DBG_ENTER_EXIT
-    }
-  };
-
   extern "C" 
   {
     int plugin_unit_sample_rate_callback (jack_nframes_t nframes, void *arg);
@@ -94,8 +34,11 @@ namespace horst
     void plugin_unit_thread_init_callback (void *arg);
   }
 
-  struct plugin_unit : public unit
+  struct plugin_unit 
   {
+    std::atomic<bool> m_atomic_enabled;
+    std::atomic<bool> m_updates_enabled;
+
     jack_client_t *m_jack_client;
     jack_nframes_t m_sample_rate;
     jack_nframes_t m_buffer_size;
@@ -121,6 +64,8 @@ namespace horst
     std::vector<std::atomic<midi_binding>> m_atomic_midi_bindings;
 
     plugin_unit (lv2_plugin_ptr plugin, const std::string &jack_client_name, bool expose_control_ports) :
+      m_atomic_enabled (true),
+      m_updates_enabled (true),
       m_jack_client (jack_client_open (jack_client_name.c_str (), JackNullOption, 0)),
       m_plugin (plugin),
       m_expose_control_ports (expose_control_ports),
@@ -215,7 +160,7 @@ namespace horst
       }
     }
 
-    virtual ~plugin_unit () {
+    ~plugin_unit () {
       DBG_ENTER
       jack_deactivate (m_jack_client);
       jack_client_close (m_jack_client);
@@ -224,41 +169,13 @@ namespace horst
 
     inline int process_callback (jack_nframes_t nframes) 
     {
-      // if (!m_plugin) return 0;
       const size_t number_of_ports = m_plugin->m_port_properties.size ();
       const size_t number_of_jack_input_ports = m_jack_input_port_indices.size ();
       const size_t number_of_jack_output_ports = m_jack_output_port_indices.size ();
 
       const bool enabled = m_atomic_enabled;
       const bool updates_enabled = m_updates_enabled;
-      // const bool enabled = true;
-      // const bool updates_enabled = false;
 
-      #if 0
-      if (enabled)
-      {
-        for (size_t index = 0; index < number_of_jack_input_ports; ++index)
-        {
-          const size_t port_index = m_jack_input_port_indices[index];
-          m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
-        }
-      }
-      else
-      {
-        for (size_t index = 0; index < number_of_jack_input_ports; ++index)
-        {
-          const size_t port_index = m_jack_input_port_indices[index];
-          m_plugin->connect_port (port_index, &m_zero_buffers[port_index][0]);
-        }
-      }
-
-      for (size_t index = 0; index < number_of_jack_output_ports; ++index)
-      {
-        const size_t port_index = m_jack_output_port_indices[index];
-        m_plugin->connect_port (port_index, (float*)jack_port_get_buffer (m_jack_ports[port_index], nframes));
-      }
-      #endif
- 
       for (size_t index = 0; index < number_of_ports; ++index)
       {
         const port_properties &p = m_plugin->m_port_properties[index];
@@ -418,46 +335,52 @@ namespace horst
       return 0;
     }
 
-    int get_number_of_ports () override {
+    int get_number_of_ports () {
       return (int)(m_plugin->m_port_properties.size ());
     }
 
-    void set_control_port_value (size_t index, float value) override {
+    void set_control_port_value (size_t index, float value) {
       if (index >= m_port_values.size ()) {
         throw std::runtime_error ("horst: plugin_unit: index out of bounds");
       }
       m_atomic_port_values [index] = value;
     }
 
-    float get_control_port_value (size_t index) override {
+    float get_control_port_value (size_t index) {
       if (index >= m_port_values.size ()) {
         throw std::runtime_error ("horst: plugin_unit: index out of bounds");
       }
       return m_atomic_port_values [index];
     }
 
-    void set_midi_binding (size_t index, const midi_binding &binding) override {
+    void set_midi_binding (size_t index, const midi_binding &binding) {
       if (index >= m_port_values.size ()) {
         throw std::runtime_error ("horst: plugin_unit: index out of bounds");
       }
       m_atomic_midi_bindings[index] = binding;
     }
 
-    midi_binding get_midi_binding (size_t index) override {
+    midi_binding get_midi_binding (size_t index) {
       if (index >= m_port_values.size ()) {
         throw std::runtime_error ("horst: plugin_unit: index out of bounds");
       }
       return m_atomic_midi_bindings[index];
     }
 
-    virtual port_properties get_port_properties (int index) override {
+    port_properties get_port_properties (int index) {
       return m_plugin->m_port_properties[index];
     }
 
-    virtual std::string get_jack_client_name () const {
+    std::string get_jack_client_name () const {
       return jack_get_client_name (m_jack_client);
     }
+
+    void set_enabled (bool enabled) {
+      m_atomic_enabled = enabled;
+    }
   };
+
+  typedef std::shared_ptr<plugin_unit> plugin_unit_ptr;
   
   extern "C" 
   {

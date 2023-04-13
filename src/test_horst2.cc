@@ -25,7 +25,7 @@ std::vector<std::string> uris = {
   "http://calf.sourceforge.net/plugins/Limiter"
 };
 
-std::vector<horst::unit_ptr> units;
+std::vector<horst::plugin_unit_ptr> units;
 
 int main (int argc, char *argv[]) {
   for (size_t index = 0; index < uris.size(); ++index) {

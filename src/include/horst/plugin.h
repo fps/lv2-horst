@@ -18,52 +18,6 @@ namespace horst {
     std::string m_name;
   };
 
-  struct plugin_base {
-    std::vector<port_properties> m_port_properties;
-
-    bool m_fixed_block_length_required;
-    bool m_power_of_two_block_length_required;
-
-    plugin_base () :
-      m_fixed_block_length_required (false),
-      m_power_of_two_block_length_required (false)
-    {
-
-    }
-
-    virtual const std::string &get_name () const = 0;
-
-    virtual void instantiate (double sample_rate, size_t buffer_size) = 0;
-
-    virtual void connect_port (size_t index, float *data) = 0;
-
-    virtual void run (size_t nframes) = 0;
-
-    virtual size_t find_port (const std::string &name) {
-      for (size_t index = 0; index < m_port_properties.size(); ++index) {
-        if (m_port_properties[index].m_name == name) { return index; }
-      }
-
-      throw std::runtime_error ("horst: lv2_plugin: Port not found: " + name);
-    }
-
-    virtual ~plugin_base () { DBG_ENTER_EXIT }
-  };
-
-  typedef std::shared_ptr<plugin_base> plugin_ptr;
-
-  struct plugin_base_wrapper {
-    plugin_ptr m;
-    plugin_base_wrapper (plugin_ptr plugin = plugin_ptr()) :
-      m (plugin) {
-      DBG_ENTER_EXIT
-    }
-  };
-
-  struct ladspa_plugin : public plugin_base {
-
-  };
-
   extern "C" {
     LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri);
     LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
@@ -74,11 +28,16 @@ namespace horst {
 #define HORST_WORK_ITEMS 32
 #define HORST_WORK_ITEM_MAX_SIZE (1024 * 10)
 
-  struct lv2_plugin : public plugin_base {
+  struct lv2_plugin {
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
     lilv_uri_node_ptr m_lilv_plugin_uri;
     lilv_plugin_ptr m_lilv_plugin;
+
+    std::vector<port_properties> m_port_properties;
+
+    bool m_fixed_block_length_required;
+    bool m_power_of_two_block_length_required;
 
     lilv_plugin_instance_ptr m_plugin_instance;
 
@@ -125,6 +84,10 @@ namespace horst {
       m_lilv_plugins (plugins),
       m_lilv_plugin_uri (new lilv_uri_node (world, uri)),
       m_lilv_plugin (new lilv_plugin (plugins, m_lilv_plugin_uri)),
+
+      m_fixed_block_length_required (false),
+      m_power_of_two_block_length_required (false),
+
       m_uri (uri),
 
       m_worker_schedule { (LV2_Worker_Schedule_Handle)this, horst::schedule_work },
@@ -266,9 +229,12 @@ namespace horst {
       DBG_EXIT
     }
 
-    virtual const std::string &get_name () const { return m_name; }
+    const std::string &get_name () const 
+    { 
+      return m_name; 
+    }
 
-    virtual void instantiate (double sample_rate, size_t buffer_size) {
+    void instantiate (double sample_rate, size_t buffer_size) {
       DBG(sample_rate << " " << buffer_size)
       m_min_block_length = 0;
       m_max_block_length = (int32_t)buffer_size;
@@ -291,11 +257,11 @@ namespace horst {
       // usleep (500000);
     }
 
-    virtual void connect_port (size_t port_index, float *data) override {
+    void connect_port (size_t port_index, float *data) {
       lilv_instance_connect_port (m_plugin_instance->m, port_index, data);
     }
 
-    virtual void run (size_t nframes) override {
+    void run (size_t nframes) {
       LV2_Worker_Interface *interface = m_worker_interface;
       if (interface) {
         if (number_of_items (m_work_responses_head, m_work_responses_tail, m_work_responses.size ())) {

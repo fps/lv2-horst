@@ -150,18 +150,13 @@ namespace horst {
       return uris;
     }
 
-    unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports)
+    plugin_unit_ptr lv2 (const std::string &uri, const std::string &jack_client_name, bool expose_control_ports)
     {
       lv2_plugin_ptr p (new lv2_plugin (m_lilv_world, m_lilv_plugins, uri));
 
       std::string final_jack_client_name = (jack_client_name != "") ? jack_client_name : p->get_name ();
 
-      return unit_ptr (new plugin_unit (p, final_jack_client_name, expose_control_ports));
-    }
-
-    unit_ptr ladspa (std::string library_file_name, std::string plugin_label)
-    {
-      return unit_ptr ();  
+      return plugin_unit_ptr (new plugin_unit (p, final_jack_client_name, expose_control_ports));
     }
 
     void connect (const connections& cs)
