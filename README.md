@@ -30,3 +30,7 @@ while True:
     print(f'{p.meter_outL_.value:.5f} {p.meter_outR_.value:.5f}')
     time.sleep(0.1)
 ```
+
+# Development scripts
+
+The `dev/` folder contains some scripts that might be useful.
