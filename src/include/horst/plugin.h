@@ -25,8 +25,8 @@ namespace horst {
     LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data);
   }
 
-#define HORST_WORK_ITEMS 32
-#define HORST_WORK_ITEM_MAX_SIZE (1024 * 10)
+  #define HORST_WORK_ITEMS 32
+  #define HORST_WORK_ITEM_MAX_SIZE (1024 * 10)
 
   struct lv2_plugin {
     lilv_world_ptr m_lilv_world;
@@ -351,6 +351,7 @@ namespace horst {
     }
 
     void *worker_thread () {
+      // TODO: Use a condition variable to signal the worker thread instead of busy looping
       DBG_ENTER
       while (!m_worker_quit) 
       {
