@@ -6,7 +6,7 @@ A simple plugin host exposing plugins as jack clients. Features python bindings.
 
 You can find examples of using lv2-horst in the examples directory.
 
-```
+```python
 import horsting as h
 import time 
 
