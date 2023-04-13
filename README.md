@@ -2,6 +2,10 @@
 
 A simple plugin host exposing plugins as jack clients. Features python bindings.
 
+# Usage
+
+Since packaging python-extensions is a horrible experience I chose not to do that. The python extension library is installed to `$PREFIX/lib/horst`. So add `$PREFIX/lib/horst` to your `PYTHONPATH`.
+
 # Examples
 
 You can find examples of using lv2-horst in the examples directory.
@@ -34,3 +38,4 @@ while True:
 # Development scripts
 
 The `dev/` folder contains some scripts that might be useful.
+
