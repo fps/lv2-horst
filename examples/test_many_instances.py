@@ -60,12 +60,6 @@ uris = [
   "http://fps.io/plugins/state-variable-filter-v2",
 ]
 
-units = []
+units = [h.lv2(uri) for uri in uris]
 
-index = 0
-for uri in uris:
-  print("Adding: " + uri)
-  units.append(h.lv2(uri))
-  # time.sleep(0.1)
-  index += 1
 h.connect(h.system, *units, h.system)
