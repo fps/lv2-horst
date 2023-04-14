@@ -1,6 +1,6 @@
 .PHONY: all clean install
 
-all: src/horst.so src/horst_cli src/test_horst src/test_horst2
+all: src/horst.so src/horst_cli src/test_horst src/test_horst2 src/test_horst3
 # all: src/horst.so src/horst_internal.so
 
 HORST_HEADERS = $(wildcard src/include/horst/*.h) $(wildcard src/include/horst/lart/*.h) $(wildcard src/include/horst/ladspa/*.h)
@@ -24,6 +24,9 @@ src/test_horst: src/test_horst.cc $(HORST_HEADERS) makefile
 	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS) 
 
 src/test_horst2: src/test_horst2.cc $(HORST_HEADERS) makefile
+	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS)
+
+src/test_horst3: src/test_horst3.cc $(HORST_HEADERS) makefile
 	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 src/horst_cli: src/horst_cli.cc $(HORST_HEADERS) makefile
