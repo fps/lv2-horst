@@ -1,0 +1,4996 @@
+{
+  "tempotap": {
+    "enabled": true,
+    "channel": 0,
+    "cc": 17
+  },
+  "racks": [
+    {
+      "enabled": true,
+      "autoconnect": true,
+      "units": [
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Gate",
+          "name": "Calf Gate",
+          "input_control_ports": [
+            {
+              "name": "Bypass",
+              "symbol": "bypass",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Max Gain Reduction",
+              "symbol": "range",
+              "range": [
+                0.06125,
+                1.5849e-05,
+                1
+              ],
+              "value": 0.06125,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.5849e-05,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Threshold",
+              "symbol": "threshold",
+              "range": [
+                0.125,
+                0.000976563,
+                1
+              ],
+              "value": 0.000976563,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.000976563,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Ratio",
+              "symbol": "ratio",
+              "range": [
+                2,
+                1,
+                20
+              ],
+              "value": 2.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 20.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Attack",
+              "symbol": "attack",
+              "range": [
+                20,
+                0.01,
+                2000
+              ],
+              "value": 20.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.01,
+                "target_maximum": 2000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Release",
+              "symbol": "release",
+              "range": [
+                250,
+                0.01,
+                2000
+              ],
+              "value": 250.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.01,
+                "target_maximum": 2000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Makeup Gain",
+              "symbol": "makeup",
+              "range": [
+                1,
+                1,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Knee",
+              "symbol": "knee",
+              "range": [
+                2.82843,
+                1,
+                8
+              ],
+              "value": 2.82843,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 8.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Detection",
+              "symbol": "detection",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Stereo Link",
+              "symbol": "stereo_link",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "daa8c7fb-18ad-4ea1-9483-58b2b16ab470",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Compressor",
+          "name": "Calf Compressor",
+          "input_control_ports": [
+            {
+              "name": "Bypass",
+              "symbol": "bypass",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Threshold",
+              "symbol": "threshold",
+              "range": [
+                0.125,
+                0.000976563,
+                1
+              ],
+              "value": 0.219976563,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.000976563,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Ratio",
+              "symbol": "ratio",
+              "range": [
+                2,
+                1,
+                20
+              ],
+              "value": 10.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 20.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Attack",
+              "symbol": "attack",
+              "range": [
+                20,
+                0.01,
+                2000
+              ],
+              "value": 20.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.01,
+                "target_maximum": 2000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Release",
+              "symbol": "release",
+              "range": [
+                250,
+                0.01,
+                2000
+              ],
+              "value": 250.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.01,
+                "target_maximum": 2000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Makeup Gain",
+              "symbol": "makeup",
+              "range": [
+                1,
+                1,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Knee",
+              "symbol": "knee",
+              "range": [
+                2.82843,
+                1,
+                8
+              ],
+              "value": 2.82843,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 8.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Detection",
+              "symbol": "detection",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Stereo Link",
+              "symbol": "stereo_link",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mix",
+              "symbol": "mix",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "d3a77f61-a01e-4374-a44f-ac80bb7b29e0",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 9
+          }
+        },
+        {
+          "uri": "http://fps.io/plugins/clipping.tanh",
+          "name": "clipping.tanh",
+          "input_control_ports": [
+            {
+              "name": "Pre-Gain (dB)",
+              "symbol": "pregain",
+              "range": [
+                0,
+                -96,
+                96
+              ],
+              "value": 37.675,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 96.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bias",
+              "symbol": "bias",
+              "range": [
+                0,
+                -1,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -1.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Post-Gain (dB)",
+              "symbol": "postgain",
+              "range": [
+                1,
+                -96,
+                96
+              ],
+              "value": -22.947,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 96.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry / Wet",
+              "symbol": "drywet",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "c00d44cd-dda0-42d2-adac-7dd0fa817256",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/EnvelopeFilter",
+          "name": "Calf Envelope Filter",
+          "input_control_ports": [
+            {
+              "name": "Bypass",
+              "symbol": "bypass",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                2,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mix",
+              "symbol": "mix",
+              "range": [
+                0.85,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Resonance",
+              "symbol": "res",
+              "range": [
+                2,
+                0.707,
+                32
+              ],
+              "value": 8.189,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.707,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mode",
+              "symbol": "mode",
+              "range": [
+                7,
+                0,
+                12
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 12.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Attack",
+              "symbol": "attack",
+              "range": [
+                20,
+                1,
+                500
+              ],
+              "value": 100.873,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 500.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Release",
+              "symbol": "release",
+              "range": [
+                200,
+                10,
+                5000
+              ],
+              "value": 200.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 10.0,
+                "target_maximum": 5000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Upper",
+              "symbol": "upper",
+              "range": [
+                3000,
+                10,
+                20000
+              ],
+              "value": 3000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 10.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lower",
+              "symbol": "lower",
+              "range": [
+                80,
+                10,
+                20000
+              ],
+              "value": 283.39,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 10.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Activation",
+              "symbol": "gain",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 9.694625,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Sidechain",
+              "symbol": "sidechain_enable",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Response",
+              "symbol": "response",
+              "range": [
+                0,
+                -1,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -1.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            },
+            {
+              "name": "Sidechain",
+              "symbol": "sidechain"
+            },
+            {
+              "name": "Sidechain 2",
+              "symbol": "sidechain2"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            [],
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "b3c802ac-54fd-4638-837a-02c0c7286ad9",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://fps.io/plugins/state-variable-filter-v2",
+          "name": "state-variable-filter-v2",
+          "input_control_ports": [
+            {
+              "name": "Frequency",
+              "symbol": "freq",
+              "range": [
+                1000,
+                1,
+                20000
+              ],
+              "value": 230.144,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Q",
+              "symbol": "q",
+              "range": [
+                0.707107,
+                0.1,
+                10
+              ],
+              "value": 0.585,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.1,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lowpass-Gain",
+              "symbol": "lowgain",
+              "range": [
+                -12,
+                -96,
+                32
+              ],
+              "value": -96.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bandpass-Gain",
+              "symbol": "bandgain",
+              "range": [
+                0,
+                -96,
+                32
+              ],
+              "value": -96.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Highpass-Gain",
+              "symbol": "highgain",
+              "range": [
+                -12,
+                -96,
+                32
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "da68b0f9-7ad9-4139-8569-4f18a682737e",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxts9#ts9sim",
+          "name": "GxTubeScreamer",
+          "input_control_ports": [
+            {
+              "name": "Level",
+              "symbol": "fslider0_",
+              "range": [
+                -16,
+                -20,
+                4
+              ],
+              "value": -11.294,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -20.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Tone",
+              "symbol": "fslider1_",
+              "range": [
+                400,
+                100,
+                1000
+              ],
+              "value": 1000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 100.0,
+                "target_maximum": 1000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Drive",
+              "symbol": "fslider2_",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.088,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "BYPASS",
+              "symbol": "BYPASS",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "in",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "4698570c-e7cb-4a5a-9966-be2c0e312ea9",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 8
+          }
+        },
+        {
+          "uri": "http://moddevices.com/plugins/mod-devel/BigMuffPi",
+          "name": "Open Big Muff",
+          "input_control_ports": [
+            {
+              "name": "Tone",
+              "symbol": "Tone",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.519,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Level",
+              "symbol": "Level",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.136,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Sustain",
+              "symbol": "Sustain",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.252,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "In"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out 1",
+              "symbol": "Out1"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "0d829e21-1a26-42ba-9e2f-fe5f71fb1ca7",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 5
+          }
+        },
+        {
+          "uri": "http://fps.io/plugins/state-variable-filter-v2",
+          "name": "state-variable-filter-v2",
+          "input_control_ports": [
+            {
+              "name": "Frequency",
+              "symbol": "freq",
+              "range": [
+                1000,
+                1,
+                20000
+              ],
+              "value": 10883.972,
+              "cc": {
+                "enabled": true,
+                "channel": 0,
+                "cc": 19,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 350.0,
+                "target_maximum": 2500.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Q",
+              "symbol": "q",
+              "range": [
+                0.707107,
+                0.1,
+                10
+              ],
+              "value": 5.086,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.1,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lowpass-Gain",
+              "symbol": "lowgain",
+              "range": [
+                -12,
+                -96,
+                32
+              ],
+              "value": -9.406,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bandpass-Gain",
+              "symbol": "bandgain",
+              "range": [
+                0,
+                -96,
+                32
+              ],
+              "value": 19.83,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Highpass-Gain",
+              "symbol": "highgain",
+              "range": [
+                -12,
+                -96,
+                32
+              ],
+              "value": -96.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "c0b60e50-b864-44af-9277-f157f602969a",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 9
+          }
+        },
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
+          "name": "GxCabinet",
+          "input_control_ports": [
+            {
+              "name": "Cabinet",
+              "symbol": "CLevel",
+              "range": [
+                1,
+                0.5,
+                5
+              ],
+              "value": 1.736,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.5,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bass",
+              "symbol": "CBass",
+              "range": [
+                0,
+                -10,
+                10
+              ],
+              "value": -8.196,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -10.0,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Treble",
+              "symbol": "CTreble",
+              "range": [
+                0,
+                -10,
+                10
+              ],
+              "value": -0.066,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -10.0,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Cab Model",
+              "symbol": "c_model",
+              "range": [
+                0,
+                0,
+                18
+              ],
+              "value": 13.76,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 18.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "BYPASS",
+              "symbol": "BYPASS",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "in",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "fdeda251-81b6-4363-a98f-a59dd5315809",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://drobilla.net/plugins/mda/Leslie",
+          "name": "MDA Leslie",
+          "input_control_ports": [
+            {
+              "name": "Mode",
+              "symbol": "mode",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lo Width",
+              "symbol": "lo_width",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lo Throb",
+              "symbol": "lo_throb",
+              "range": [
+                0.6,
+                0,
+                1
+              ],
+              "value": 0.6,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Hi Width",
+              "symbol": "hi_width",
+              "range": [
+                0.7,
+                0,
+                1
+              ],
+              "value": 0.7,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Hi Depth",
+              "symbol": "hi_depth",
+              "range": [
+                0.6,
+                0,
+                1
+              ],
+              "value": 0.6,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Hi Throb",
+              "symbol": "hi_throb",
+              "range": [
+                0.7,
+                0,
+                1
+              ],
+              "value": 0.7,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "X-Over",
+              "symbol": "x_over",
+              "range": [
+                0.48,
+                0,
+                1
+              ],
+              "value": 0.48,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output",
+              "symbol": "output",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Speed",
+              "symbol": "speed",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.093,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "Left In",
+              "symbol": "left_in"
+            },
+            {
+              "name": "Right In",
+              "symbol": "right_in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Left Out",
+              "symbol": "left_out"
+            },
+            {
+              "name": "Right Out",
+              "symbol": "right_out"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "3b9a2b54-e17c-48f2-bab8-aa1edc78e8f8",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 1
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/MultiChorus",
+          "name": "Calf Multi Chorus",
+          "input_control_ports": [
+            {
+              "name": "Min Delay",
+              "symbol": "min_delay",
+              "range": [
+                5,
+                0.1,
+                10
+              ],
+              "value": 5.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.1,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mod Depth",
+              "symbol": "mod_depth",
+              "range": [
+                6,
+                0.1,
+                10
+              ],
+              "value": 3.666,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.1,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mod Rate",
+              "symbol": "mod_rate",
+              "range": [
+                0.1,
+                0.01,
+                20
+              ],
+              "value": 0.323,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.01,
+                "target_maximum": 20.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Stereo Phase",
+              "symbol": "stereo",
+              "range": [
+                180,
+                0,
+                360
+              ],
+              "value": 180.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 360.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Voices",
+              "symbol": "voices",
+              "range": [
+                4,
+                1,
+                8
+              ],
+              "value": 4.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 8.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Inter-Voice Phase",
+              "symbol": "vphase",
+              "range": [
+                64,
+                0,
+                360
+              ],
+              "value": 64.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 360.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Amount",
+              "symbol": "amount",
+              "range": [
+                0.5,
+                0,
+                4
+              ],
+              "value": 1.06,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry Amount",
+              "symbol": "dry",
+              "range": [
+                0.5,
+                0,
+                4
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Center Frq 1",
+              "symbol": "freq",
+              "range": [
+                100,
+                10,
+                20000
+              ],
+              "value": 100.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 10.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Center Frq 2",
+              "symbol": "freq2",
+              "range": [
+                5000,
+                10,
+                20000
+              ],
+              "value": 5000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 10.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Q",
+              "symbol": "q",
+              "range": [
+                0.125,
+                0.125,
+                8
+              ],
+              "value": 0.125,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.125,
+                "target_maximum": 8.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Overlap",
+              "symbol": "overlap",
+              "range": [
+                0.75,
+                0,
+                1
+              ],
+              "value": 0.75,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Active",
+              "symbol": "on",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "LFO",
+              "symbol": "lfo",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "c997b162-5952-4f9d-b96d-881c10b3988d",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 6
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Phaser",
+          "name": "Calf Phaser",
+          "input_control_ports": [
+            {
+              "name": "Center Freq",
+              "symbol": "base_freq",
+              "range": [
+                1000,
+                20,
+                20000
+              ],
+              "value": 583.162,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mod depth",
+              "symbol": "mod_depth",
+              "range": [
+                4000,
+                0,
+                10800
+              ],
+              "value": 1752.493,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 10800.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Mod rate",
+              "symbol": "mod_rate",
+              "range": [
+                0.1,
+                0.01,
+                20
+              ],
+              "value": 0.1,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.01,
+                "target_maximum": 20.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Feedback",
+              "symbol": "feedback",
+              "range": [
+                0.5,
+                -0.99,
+                0.99
+              ],
+              "value": 0.797,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -0.99,
+                "target_maximum": 0.99,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "# Stages",
+              "symbol": "stages",
+              "range": [
+                6,
+                1,
+                12
+              ],
+              "value": 5.116,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 12.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Stereo phase",
+              "symbol": "stereo",
+              "range": [
+                180,
+                0,
+                360
+              ],
+              "value": 96.905,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 360.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Reset",
+              "symbol": "reset",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Amount",
+              "symbol": "amount",
+              "range": [
+                0.5,
+                0,
+                4
+              ],
+              "value": 0.447,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry Amount",
+              "symbol": "dry",
+              "range": [
+                1,
+                0,
+                4
+              ],
+              "value": 0.997,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Active",
+              "symbol": "on",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "LFO",
+              "symbol": "lfo",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "54bd6d93-b706-4baf-abad-2ee10628a52a",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 7
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Reverb",
+          "name": "Calf Reverb",
+          "input_control_ports": [
+            {
+              "name": "Decay time",
+              "symbol": "decay_time",
+              "range": [
+                1.5,
+                0.4,
+                15
+              ],
+              "value": 1.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.4,
+                "target_maximum": 15.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "High Frq Damp",
+              "symbol": "hf_damp",
+              "range": [
+                5000,
+                2000,
+                20000
+              ],
+              "value": 5000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 2000.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Room size",
+              "symbol": "room_size",
+              "range": [
+                2,
+                0,
+                5
+              ],
+              "value": 2.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Diffusion",
+              "symbol": "diffusion",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Wet Amount",
+              "symbol": "amount",
+              "range": [
+                0.25,
+                0,
+                2
+              ],
+              "value": 0.028,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry Amount",
+              "symbol": "dry",
+              "range": [
+                1,
+                0,
+                2
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Pre Delay",
+              "symbol": "predelay",
+              "range": [
+                0,
+                0,
+                500
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 500.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bass Cut",
+              "symbol": "bass_cut",
+              "range": [
+                300,
+                20,
+                20000
+              ],
+              "value": 300.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Treble Cut",
+              "symbol": "treble_cut",
+              "range": [
+                5000,
+                20,
+                20000
+              ],
+              "value": 5000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Active",
+              "symbol": "on",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "91e52295-1fb5-434a-a799-7220e527086d",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Reverb",
+          "name": "Calf Reverb",
+          "input_control_ports": [
+            {
+              "name": "Decay time",
+              "symbol": "decay_time",
+              "range": [
+                1.5,
+                0.4,
+                15
+              ],
+              "value": 2.669,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.4,
+                "target_maximum": 15.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "High Frq Damp",
+              "symbol": "hf_damp",
+              "range": [
+                5000,
+                2000,
+                20000
+              ],
+              "value": 7832.117,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 2000.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Room size",
+              "symbol": "room_size",
+              "range": [
+                2,
+                0,
+                5
+              ],
+              "value": 5.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Diffusion",
+              "symbol": "diffusion",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.702,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Wet Amount",
+              "symbol": "amount",
+              "range": [
+                0.25,
+                0,
+                2
+              ],
+              "value": 0.279,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry Amount",
+              "symbol": "dry",
+              "range": [
+                1,
+                0,
+                2
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Pre Delay",
+              "symbol": "predelay",
+              "range": [
+                0,
+                0,
+                500
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 500.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bass Cut",
+              "symbol": "bass_cut",
+              "range": [
+                300,
+                20,
+                20000
+              ],
+              "value": 300.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Treble Cut",
+              "symbol": "treble_cut",
+              "range": [
+                5000,
+                20,
+                20000
+              ],
+              "value": 1475.277,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Active",
+              "symbol": "on",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "aef98ed7-7fa4-4f0b-b1a6-eafd932c99b3",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 4
+          }
+        },
+        {
+          "uri": "http://drobilla.net/plugins/mda/DubDelay",
+          "name": "MDA DubDelay",
+          "input_control_ports": [
+            {
+              "name": "Delay",
+              "symbol": "delay",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.244,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Feedback",
+              "symbol": "feedback",
+              "range": [
+                0.7,
+                0,
+                1
+              ],
+              "value": 0.405,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Fb Tone",
+              "symbol": "fb_tone",
+              "range": [
+                0.4,
+                0,
+                1
+              ],
+              "value": 0.4,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "LFO Depth",
+              "symbol": "lfo_depth",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.259,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "LFO Rate",
+              "symbol": "lfo_rate",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "FX Mix",
+              "symbol": "fx_mix",
+              "range": [
+                0.33,
+                0,
+                1
+              ],
+              "value": 0.122,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output",
+              "symbol": "output",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.504,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "Left In",
+              "symbol": "left_in"
+            },
+            {
+              "name": "Right In",
+              "symbol": "right_in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Left Out",
+              "symbol": "left_out"
+            },
+            {
+              "name": "Right Out",
+              "symbol": "right_out"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "0893c6df-ddd4-4b7c-9bc2-9ede225e8a75",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 2
+          }
+        },
+        {
+          "uri": "https://ca9.eu/lv2/bolliedelay",
+          "name": "Bollie Delay",
+          "input_control_ports": [
+            {
+              "name": "Host/MOD-Tempo",
+              "symbol": "tempo_host",
+              "range": [
+                120,
+                6,
+                1000
+              ],
+              "value": 120.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 6.0,
+                "target_maximum": 1000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "User-Tempo",
+              "symbol": "tempo_user",
+              "range": [
+                120,
+                6,
+                1000
+              ],
+              "value": 120.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 6.0,
+                "target_maximum": 1000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Tempo Mode",
+              "symbol": "tempo_mode",
+              "range": [
+                0,
+                0,
+                2
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Tap",
+              "symbol": "tap",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Blend",
+              "symbol": "mix",
+              "range": [
+                30,
+                0,
+                100
+              ],
+              "value": 34.549,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 100.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Feedback",
+              "symbol": "feedback",
+              "range": [
+                40,
+                0,
+                100
+              ],
+              "value": 68.305,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 100.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Crossfeed",
+              "symbol": "crossf",
+              "range": [
+                20,
+                0,
+                100
+              ],
+              "value": 20.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 100.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Low on",
+              "symbol": "low_on",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Low Cut Freq.",
+              "symbol": "low_f",
+              "range": [
+                20,
+                20,
+                2000
+              ],
+              "value": 20.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 2000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Low Q.",
+              "symbol": "low_q",
+              "range": [
+                1,
+                0.125,
+                8
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.125,
+                "target_maximum": 8.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "High on",
+              "symbol": "high_on",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "High Cut Freq.",
+              "symbol": "high_f",
+              "range": [
+                7500,
+                200,
+                22000
+              ],
+              "value": 7500.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 200.0,
+                "target_maximum": 22000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "High Q.",
+              "symbol": "high_q",
+              "range": [
+                1,
+                0.125,
+                8
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.125,
+                "target_maximum": 8.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Div. L",
+              "symbol": "div_l",
+              "range": [
+                0,
+                0,
+                5
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Div. R",
+              "symbol": "div_r",
+              "range": [
+                0,
+                0,
+                5
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "edd078e3-f42c-46f8-bd9d-9cd4c3a91888",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": true,
+            "channel": 0,
+            "cc": 16
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Limiter",
+          "name": "Calf Limiter",
+          "input_control_ports": [
+            {
+              "name": "Bypass",
+              "symbol": "bypass",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 0.940625,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Limit",
+              "symbol": "limit",
+              "range": [
+                1,
+                0.0625,
+                1
+              ],
+              "value": 0.9555,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0625,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lookahead",
+              "symbol": "attack",
+              "range": [
+                5,
+                0.1,
+                10
+              ],
+              "value": 10.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.1,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Release",
+              "symbol": "release",
+              "range": [
+                50,
+                1,
+                1000
+              ],
+              "value": 16.626,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 1000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "ASC",
+              "symbol": "asc",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "ASC Level",
+              "symbol": "asc_coeff",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Oversampling",
+              "symbol": "oversampling",
+              "range": [
+                1,
+                1,
+                4
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Auto-level",
+              "symbol": "auto_level",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "58199c34-ff07-4f52-927d-81c8af7e0ca1",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        }
+      ],
+      "cc": null,
+      "input_connections": [
+        [
+          "system:capture_1"
+        ],
+        []
+      ],
+      "output_connections": [
+        [
+          "system:playback_1"
+        ],
+        [
+          "system:playback_2"
+        ]
+      ]
+    },
+    {
+      "enabled": true,
+      "autoconnect": true,
+      "units": [
+        {
+          "uri": "http://fps.io/plugins/state-variable-filter-v2",
+          "name": "state-variable-filter-v2",
+          "input_control_ports": [
+            {
+              "name": "Frequency",
+              "symbol": "freq",
+              "range": [
+                1000,
+                1,
+                20000
+              ],
+              "value": 397.273,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Q",
+              "symbol": "q",
+              "range": [
+                0.707107,
+                0.1,
+                10
+              ],
+              "value": 0.694,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.1,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Lowpass-Gain",
+              "symbol": "lowgain",
+              "range": [
+                -12,
+                -96,
+                32
+              ],
+              "value": -96.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bandpass-Gain",
+              "symbol": "bandgain",
+              "range": [
+                0,
+                -96,
+                32
+              ],
+              "value": -96.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Highpass-Gain",
+              "symbol": "highgain",
+              "range": [
+                -12,
+                -96,
+                32
+              ],
+              "value": -0.319,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 32.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "b5314e74-3ee0-4065-aa6b-b35f185d4512",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://fps.io/plugins/clipping.tanh",
+          "name": "clipping.tanh",
+          "input_control_ports": [
+            {
+              "name": "Pre-Gain (dB)",
+              "symbol": "pregain",
+              "range": [
+                0,
+                -96,
+                96
+              ],
+              "value": 83.337,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 96.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bias",
+              "symbol": "bias",
+              "range": [
+                0,
+                -1,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -1.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Post-Gain (dB)",
+              "symbol": "postgain",
+              "range": [
+                1,
+                -96,
+                96
+              ],
+              "value": -34.659,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -96.0,
+                "target_maximum": 96.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry / Wet",
+              "symbol": "drywet",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "8960809d-6d69-4728-b155-57d0869077d2",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://fps.io/plugins/relative_compressor",
+          "name": "Relative compressor",
+          "input_control_ports": [
+            {
+              "name": "Time constant 1 (ms)",
+              "symbol": "t1",
+              "range": [
+                10,
+                1,
+                1000
+              ],
+              "value": 10.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 1000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Time constant 2 (ms)",
+              "symbol": "t2",
+              "range": [
+                100,
+                1,
+                10000
+              ],
+              "value": 40.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 10000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Strength",
+              "symbol": "strength",
+              "range": [
+                1,
+                -1,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -1.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Delay (lookahead, ms)",
+              "symbol": "delay",
+              "range": [
+                0,
+                0,
+                1000
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Maximum ratio",
+              "symbol": "maxratio",
+              "range": [
+                5,
+                1,
+                100
+              ],
+              "value": 1.225,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 1.0,
+                "target_maximum": 100.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "8860428d-299d-4fff-a4ad-bb8b9442f23a",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
+          "name": "GxCabinet",
+          "input_control_ports": [
+            {
+              "name": "Cabinet",
+              "symbol": "CLevel",
+              "range": [
+                1,
+                0.5,
+                5
+              ],
+              "value": 0.504,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.5,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bass",
+              "symbol": "CBass",
+              "range": [
+                0,
+                -10,
+                10
+              ],
+              "value": -2.579,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -10.0,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Treble",
+              "symbol": "CTreble",
+              "range": [
+                0,
+                -10,
+                10
+              ],
+              "value": 0.036,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -10.0,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Cab Model",
+              "symbol": "c_model",
+              "range": [
+                0,
+                0,
+                18
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 18.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "BYPASS",
+              "symbol": "BYPASS",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "in",
+              "symbol": "in"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out",
+              "symbol": "out"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "9be57669-6bde-41ef-8d28-179eec3ae6c2",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/HaasEnhancer",
+          "name": "Calf Haas Stereo Enhancer",
+          "input_control_ports": [
+            {
+              "name": "Bypass",
+              "symbol": "bypass",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Side Gain",
+              "symbol": "s_gain",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 0.264625,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Middle source",
+              "symbol": "m_source",
+              "range": [
+                2,
+                0,
+                4
+              ],
+              "value": 2.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 4.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Middle phase",
+              "symbol": "m_phase",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Left Delay",
+              "symbol": "s_delay1",
+              "range": [
+                2.05,
+                0,
+                10
+              ],
+              "value": 1.347,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Left Balance",
+              "symbol": "s_balance1",
+              "range": [
+                -1,
+                -1,
+                1
+              ],
+              "value": -1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -1.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Left Gain",
+              "symbol": "s_gain1",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Left Phase",
+              "symbol": "s_phase1",
+              "range": [
+                0,
+                0,
+                1
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Right Delay",
+              "symbol": "s_delay2",
+              "range": [
+                2.12,
+                0,
+                10
+              ],
+              "value": 0.649,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 10.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Right Balance",
+              "symbol": "s_balance2",
+              "range": [
+                1,
+                -1,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -1.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Right Gain",
+              "symbol": "s_gain2",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Right Phase",
+              "symbol": "s_phase2",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "19e3feb0-03b5-45b9-b44c-89a1208ac8c9",
+          "direction": "",
+          "enabled": false,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        },
+        {
+          "uri": "http://calf.sourceforge.net/plugins/Reverb",
+          "name": "Calf Reverb",
+          "input_control_ports": [
+            {
+              "name": "Decay time",
+              "symbol": "decay_time",
+              "range": [
+                1.5,
+                0.4,
+                15
+              ],
+              "value": 1.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.4,
+                "target_maximum": 15.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "High Frq Damp",
+              "symbol": "hf_damp",
+              "range": [
+                5000,
+                2000,
+                20000
+              ],
+              "value": 5000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 2000.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Room size",
+              "symbol": "room_size",
+              "range": [
+                2,
+                0,
+                5
+              ],
+              "value": 2.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 5.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Diffusion",
+              "symbol": "diffusion",
+              "range": [
+                0.5,
+                0,
+                1
+              ],
+              "value": 0.5,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Wet Amount",
+              "symbol": "amount",
+              "range": [
+                0.25,
+                0,
+                2
+              ],
+              "value": 0.128,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Dry Amount",
+              "symbol": "dry",
+              "range": [
+                1,
+                0,
+                2
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 2.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Pre Delay",
+              "symbol": "predelay",
+              "range": [
+                0,
+                0,
+                500
+              ],
+              "value": 0.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 500.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Bass Cut",
+              "symbol": "bass_cut",
+              "range": [
+                300,
+                20,
+                20000
+              ],
+              "value": 300.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Treble Cut",
+              "symbol": "treble_cut",
+              "range": [
+                5000,
+                20,
+                20000
+              ],
+              "value": 5000.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 20.0,
+                "target_maximum": 20000.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Active",
+              "symbol": "on",
+              "range": [
+                1,
+                0,
+                1
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.0,
+                "target_maximum": 1.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Input Gain",
+              "symbol": "level_in",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            },
+            {
+              "name": "Output Gain",
+              "symbol": "level_out",
+              "range": [
+                1,
+                0.015625,
+                64
+              ],
+              "value": 1.0,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": 0.015625,
+                "target_maximum": 64.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "In L",
+              "symbol": "in_l"
+            },
+            {
+              "name": "In R",
+              "symbol": "in_r"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Out L",
+              "symbol": "out_l"
+            },
+            {
+              "name": "Out R",
+              "symbol": "out_r"
+            }
+          ],
+          "input_connections": [
+            [],
+            []
+          ],
+          "output_connections": [
+            [],
+            []
+          ],
+          "uuid": "d0999981-2150-4592-abe9-15ab70db7882",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        }
+      ],
+      "cc": null,
+      "input_connections": [
+        [],
+        []
+      ],
+      "output_connections": [
+        [],
+        []
+      ]
+    },
+    {
+      "enabled": true,
+      "autoconnect": true,
+      "units": [
+        {
+          "uri": "http://plugin.org.uk/swh-plugins/amp",
+          "name": "Simple amplifier",
+          "input_control_ports": [
+            {
+              "name": "Amps gain (dB)",
+              "symbol": "gain",
+              "range": [
+                0,
+                -70,
+                70
+              ],
+              "value": -0.012,
+              "cc": {
+                "enabled": false,
+                "channel": 0,
+                "cc": 0,
+                "cc_minimum": 0,
+                "cc_maximum": 127,
+                "target_minimum": -70.0,
+                "target_maximum": 70.0,
+                "mode": "linear"
+              }
+            }
+          ],
+          "input_audio_ports": [
+            {
+              "name": "Input",
+              "symbol": "input"
+            }
+          ],
+          "output_audio_ports": [
+            {
+              "name": "Output",
+              "symbol": "output"
+            }
+          ],
+          "input_connections": [
+            []
+          ],
+          "output_connections": [
+            []
+          ],
+          "uuid": "dce10e0b-31fa-45b3-8dce-931c11259548",
+          "direction": "",
+          "enabled": true,
+          "cc": {
+            "enabled": false,
+            "channel": 0,
+            "cc": 0
+          }
+        }
+      ],
+      "cc": null,
+      "input_connections": [
+        [],
+        []
+      ],
+      "output_connections": [
+        [
+          "system:playback_1"
+        ],
+        [
+          "system:playback_2"
+        ]
+      ]
+    }
+  ],
+  "schema-version": 1,
+  "input_midi_connections": [
+    "a2j:Arduino Leonardo [28] (capture): Arduino Leonardo MIDI 1"
+  ]
+}
