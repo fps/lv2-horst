@@ -1,6 +1,6 @@
 .PHONY: all clean install
 
-all: src/horst.so src/horst_cli src/test_horst src/test_horst2 src/test_horst3
+all: src/horst.so src/horst_cli src/test_horst src/test_horst2 src/test_horst3 src/test_many_clients
 # all: src/horst.so src/horst_internal.so
 
 HORST_HEADERS = $(wildcard src/include/horst/*.h) $(wildcard src/include/horst/lart/*.h) $(wildcard src/include/horst/ladspa/*.h)
@@ -22,6 +22,9 @@ LDFLAGS += `pkg-config lilv-0 jack --libs` -latomic -pthread
 
 src/test_horst: src/test_horst.cc $(HORST_HEADERS) makefile
 	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS) 
+
+src/test_many_clients: src/test_many_clients.cc $(HORST_HEADERS) makefile
+	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS)
 
 src/test_horst2: src/test_horst2.cc $(HORST_HEADERS) makefile
 	g++ -o $@ $(CXXFLAGS) $< $(LDFLAGS)
