@@ -70,9 +70,9 @@ namespace horst
     plugin_unit (lv2_plugin_ptr plugin, const std::string &jack_client_name, bool expose_control_ports) :
       m_atomic_enabled (true),
       m_atomic_control_input_updates_enabled (true),
-      m_atomic_control_output_updates_enabled (true),
-      m_atomic_audio_input_monitoring_enabled (true),
-      m_atomic_audio_output_monitoring_enabled (true),
+      m_atomic_control_output_updates_enabled (false),
+      m_atomic_audio_input_monitoring_enabled (false),
+      m_atomic_audio_output_monitoring_enabled (false),
       m_jack_client (jack_client_open (jack_client_name.c_str (), JackNullOption, 0)),
       m_plugin (plugin),
       m_expose_control_ports (expose_control_ports),

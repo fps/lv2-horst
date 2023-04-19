@@ -6,6 +6,7 @@ uri = "http://calf.sourceforge.net/plugins/VintageDelay"
 
 # Let's instantiate and run the plugin
 p = h.lv2(uri)
+p.set_control_output_updates_enabled(True)
 
 # Set some port values. Note how each port symbol has a "_"-suffix.
 # This is done to avoid clashes with other identifiers.
