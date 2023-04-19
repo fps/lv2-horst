@@ -2,6 +2,7 @@
 
 #include <horst/plugin.h>
 #include <horst/jack.h>
+#include <cmath>
 
 namespace horst
 {
@@ -37,7 +38,10 @@ namespace horst
   struct plugin_unit 
   {
     std::atomic<bool> m_atomic_enabled;
-    std::atomic<bool> m_updates_enabled;
+    std::atomic<bool> m_atomic_control_input_updates_enabled;
+    std::atomic<bool> m_atomic_control_output_updates_enabled;
+    std::atomic<bool> m_atomic_audio_input_monitoring_enabled;
+    std::atomic<bool> m_atomic_audio_output_monitoring_enabled;
 
     jack_client_t *m_jack_client;
     jack_nframes_t m_sample_rate;
@@ -65,7 +69,10 @@ namespace horst
 
     plugin_unit (lv2_plugin_ptr plugin, const std::string &jack_client_name, bool expose_control_ports) :
       m_atomic_enabled (true),
-      m_updates_enabled (true),
+      m_atomic_control_input_updates_enabled (true),
+      m_atomic_control_output_updates_enabled (true),
+      m_atomic_audio_input_monitoring_enabled (true),
+      m_atomic_audio_output_monitoring_enabled (true),
       m_jack_client (jack_client_open (jack_client_name.c_str (), JackNullOption, 0)),
       m_plugin (plugin),
       m_expose_control_ports (expose_control_ports),
@@ -174,7 +181,10 @@ namespace horst
       const size_t number_of_jack_output_ports = m_jack_output_port_indices.size ();
 
       const bool enabled = m_atomic_enabled;
-      const bool updates_enabled = m_updates_enabled;
+      const bool control_input_updates_enabled = m_atomic_control_input_updates_enabled;
+      const bool control_output_updates_enabled = m_atomic_control_output_updates_enabled;
+      const bool audio_input_monitoring_enabled = m_atomic_audio_input_monitoring_enabled;
+      const bool audio_output_monitoring_enabled = m_atomic_audio_output_monitoring_enabled;
 
       for (size_t index = 0; index < number_of_ports; ++index)
       {
@@ -193,21 +203,26 @@ namespace horst
         }
       }
 
-      if (updates_enabled)
+      if (control_input_updates_enabled)
       {
         for (size_t index = 0; index < number_of_ports; ++index)
         {
           const port_properties &p = m_plugin->m_port_properties[index];
-          if (p.m_is_control && !m_expose_control_ports)
+          if (p.m_is_control && p.m_is_input && !m_expose_control_ports)
           {
-            if (p.m_is_input)
-            {
-              m_port_values[index] = m_atomic_port_values[index];
-            }
-            else
-            {
-              m_atomic_port_values[index] = m_port_values[index];
-            }
+            m_port_values[index] = m_atomic_port_values[index];
+          }
+        }
+      }
+
+      if (control_output_updates_enabled)
+      {
+        for (size_t index = 0; index < number_of_ports; ++index)
+        {
+          const port_properties &p = m_plugin->m_port_properties[index];
+          if (p.m_is_control && p.m_is_output && !m_expose_control_ports)
+          {
+            m_atomic_port_values[index] = m_port_values[index];
           }
         }
       }
@@ -277,19 +292,40 @@ namespace horst
         }
       }
 
-      if (updates_enabled) 
+      if (audio_input_monitoring_enabled) 
       {
         for (size_t index = 0; index < number_of_jack_input_ports; ++index)
         {
-          m_atomic_port_values[m_jack_input_port_indices[index]]
-            = m_jack_port_buffers[m_jack_input_port_indices[index]][0];
+          float max_value = 0;
+          const float * const buffer = m_jack_port_buffers[m_jack_input_port_indices[index]];
+          for (size_t frame = 0; frame < nframes; ++frame) 
+          {
+            if (fabs(buffer[frame]) > max_value) max_value = buffer[frame];
+          }
+          m_atomic_port_values[m_jack_input_port_indices[index]] = max_value;
         }
-  
+      }
+      else
+      {
+        for (size_t index = 0; index < number_of_jack_input_ports; ++index) m_atomic_port_values[m_jack_input_port_indices[index]] = 0.f;
+      }
+
+      if (audio_output_monitoring_enabled)
+      {
         for (size_t index = 0; index < number_of_jack_output_ports; ++index)
         {
-          m_atomic_port_values[m_jack_output_port_indices[index]]
-            = m_jack_port_buffers[m_jack_output_port_indices[index]][0];
+          float max_value = 0;
+          const float * const buffer = m_jack_port_buffers[m_jack_output_port_indices[index]];
+          for (size_t frame = 0; frame < nframes; ++frame) 
+          {
+            if (fabs(buffer[frame]) > max_value) max_value = buffer[frame];
+          }
+          m_atomic_port_values[m_jack_output_port_indices[index]] = max_value;
         }
+      }
+      else
+      {
+        for (size_t index = 0; index < number_of_jack_output_ports; ++index) m_atomic_port_values[m_jack_output_port_indices[index]] = 0.f;
       }
 
       return 0;
@@ -377,6 +413,22 @@ namespace horst
 
     void set_enabled (bool enabled) {
       m_atomic_enabled = enabled;
+    }
+
+    void set_control_input_updates_enabled (bool enabled) {
+      m_atomic_control_input_updates_enabled = enabled;
+    }
+
+    void set_control_output_updates_enabled (bool enabled) {
+      m_atomic_control_output_updates_enabled = enabled;
+    }
+
+    void set_audio_input_monitoring_enabled (bool enabled) {
+      m_atomic_audio_input_monitoring_enabled = enabled;
+    }
+
+    void set_audio_output_monitoring_enabled (bool enabled) {
+      m_atomic_audio_output_monitoring_enabled = enabled;
     }
   };
 

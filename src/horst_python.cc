@@ -47,6 +47,10 @@ PYBIND11_MODULE(horst, m)
     .def ("get_number_of_ports", &horst::plugin_unit::get_number_of_ports)
     .def ("get_port_properties", &horst::plugin_unit::get_port_properties)
     .def ("set_enabled", &horst::plugin_unit::set_enabled)
+    .def ("set_control_input_updates_enabled", &horst::plugin_unit::set_control_input_updates_enabled)
+    .def ("set_control_output_updates_enabled", &horst::plugin_unit::set_control_output_updates_enabled)
+    .def ("set_audio_input_monitoring_enabled", &horst::plugin_unit::set_audio_input_monitoring_enabled)
+    .def ("set_audio_output_monitoring_enabled", &horst::plugin_unit::set_audio_output_monitoring_enabled)
     .def ("get_jack_client_name", &horst::plugin_unit::get_jack_client_name)
   ;
 
