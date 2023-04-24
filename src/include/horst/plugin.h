@@ -50,6 +50,8 @@ namespace horst {
 
     std::vector<LV2_Options_Option> m_options;
 
+    LV2_State_Interface *m_state_interface;
+
     LV2_Worker_Schedule m_worker_schedule;
     std::atomic<LV2_Worker_Interface*> m_worker_interface;
     bool m_worker_required;
@@ -89,6 +91,8 @@ namespace horst {
       m_power_of_two_block_length_required (false),
 
       m_uri (uri),
+
+      m_state_interface (0),
 
       m_worker_schedule { (LV2_Worker_Schedule_Handle)this, horst::schedule_work },
       m_worker_interface (0),
@@ -168,6 +172,34 @@ namespace horst {
         lilv_nodes_free (features);
       }
 
+      features = lilv_plugin_get_optional_features (m_lilv_plugin->m);
+      if (features != 0) {
+        std::stringstream s;
+        LILV_FOREACH(nodes, i, features) {
+          const LilvNode *node = lilv_nodes_get (features, i);
+          std::string feature_uri =  lilv_node_as_uri (node);
+          if (feature_uri == LV2_WORKER__schedule) m_worker_required = true;
+          bool supported = false;
+          for (size_t feature_index = 0; feature_index < m_supported_features.size () - 1; ++feature_index) {
+            if (m_supported_features[feature_index]->URI == feature_uri) {
+              if (feature_uri == m_power_of_two_block_length_feature.URI) {
+                m_fixed_block_length_required = true;
+                m_power_of_two_block_length_required = true;
+              }
+              if (feature_uri == m_fixed_block_length_feature.URI || feature_uri == m_coarse_block_length_feature.URI) {
+                m_fixed_block_length_required = true;
+              }
+              supported = true;
+              break;
+            }
+          }
+          if (!supported) {
+            DBG("Unsupported optional feature: " << feature_uri)
+          }
+        }
+        lilv_nodes_free (features);
+      }
+
       #ifdef HORST_DEBUG
       lilv_uri_node required_options_uri (world, LV2_OPTIONS__requiredOption);
       LilvNodes *required_options = lilv_plugin_get_value (m_lilv_plugin->m, required_options_uri.m);
@@ -177,6 +209,12 @@ namespace horst {
       }
       lilv_nodes_free (required_options);
       #endif
+
+      lilv_uri_node state_extension_node (world, LV2_STATE__interface);
+      if (lilv_plugin_has_extension_data (m_lilv_plugin->m, state_extension_node.m))
+      {
+        DBG("Has state extension")
+      }
 
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);

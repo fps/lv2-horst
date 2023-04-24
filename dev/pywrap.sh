@@ -1,1 +1,1 @@
-PYTHONPATH=./src/ python3 $*
+PYTHONPATH=./src/:$PYTHONPATH python3 $*
