@@ -2,9 +2,10 @@
 
 #include <horst/lv2.h>
 
-namespace horst {
-
-  struct port_properties {
+namespace horst
+{
+  struct port_properties 
+  {
     bool m_is_audio;
     bool m_is_control;
     bool m_is_cv;
@@ -18,7 +19,8 @@ namespace horst {
     std::string m_name;
   };
 
-  extern "C" {
+  extern "C" 
+  {
     LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri);
     LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     void *worker_thread (void *);
@@ -30,7 +32,8 @@ namespace horst {
   #define HORST_WORK_ITEMS 32
   #define HORST_WORK_ITEM_MAX_SIZE (1024 * 10)
 
-  struct lv2_plugin {
+  struct lv2_plugin 
+  {
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
     lilv_uri_node_ptr m_lilv_plugin_uri;
@@ -168,7 +171,8 @@ namespace horst {
       m_worker_feature { .URI = LV2_WORKER__schedule, .data = &m_worker_schedule }
     {
       DBG_ENTER
-      for (size_t index = 0; index < HORST_WORK_ITEMS; ++index) {
+      for (size_t index = 0; index < HORST_WORK_ITEMS; ++index) 
+      {
         m_work_items[index].first = 0;
         m_work_items[index].second = std::array<uint8_t, HORST_WORK_ITEM_MAX_SIZE>{};
         m_work_responses[index].first = 0;
@@ -220,7 +224,8 @@ namespace horst {
       lilv_uri_node side_chain (world, "https://lv2plug.in/ns/lv2core#isSideChain");
 
       m_port_properties.resize (lilv_plugin_get_num_ports (m_lilv_plugin->m));
-      for (size_t index = 0; index < m_port_properties.size(); ++index) {
+      for (size_t index = 0; index < m_port_properties.size(); ++index) 
+      {
         const LilvPort *lilv_port = lilv_plugin_get_port_by_index (m_lilv_plugin->m, index);
         port_properties &p = m_port_properties[index];
         p.m_name = lilv_node_as_string (lilv_port_get_symbol (m_lilv_plugin->m, lilv_port));
@@ -232,7 +237,8 @@ namespace horst {
         p.m_is_output = lilv_port_is_a (m_lilv_plugin->m, lilv_port, output.m);
         p.m_is_side_chain = lilv_port_has_property (m_lilv_plugin->m, lilv_port, side_chain.m);
 
-        if (p.m_is_input && p.m_is_control) {
+        if (p.m_is_input && p.m_is_control) 
+        {
           LilvNode *def;
           LilvNode *min;
           LilvNode *max;
@@ -268,13 +274,15 @@ namespace horst {
       return m_name; 
     }
 
-    void instantiate (double sample_rate, size_t buffer_size) {
+    void instantiate (double sample_rate, size_t buffer_size) 
+    {
       DBG(sample_rate << " " << buffer_size)
       m_min_block_length = 0;
       m_max_block_length = (int32_t)buffer_size;
       m_nominal_block_length = (int32_t)buffer_size;
 
-      if (m_fixed_block_length_required) {
+      if (m_fixed_block_length_required) 
+      {
         m_min_block_length = (int32_t)buffer_size;
       }
 
@@ -295,17 +303,22 @@ namespace horst {
       // usleep (500000);
     }
 
-    void connect_port (size_t port_index, float *data) {
+    void connect_port (size_t port_index, float *data) 
+    {
       lilv_instance_connect_port (m_plugin_instance->m, port_index, data);
     }
 
-    void run (size_t nframes) {
+    void run (size_t nframes) 
+    {
       LV2_Worker_Interface *interface = m_worker_interface;
-      if (interface) {
-        if (number_of_items (m_work_responses_head, m_work_responses_tail, m_work_responses.size ())) {
+      if (interface) 
+      {
+        if (number_of_items (m_work_responses_head, m_work_responses_tail, m_work_responses.size ())) 
+        {
           DBG_JACK("has responses")
           auto &item = m_work_responses[m_work_responses_tail];
-          if (interface->work_response) {
+          if (interface->work_response) 
+          {
             DBG_JACK("item: " << item.first << " " << (int)item.second[0])
             interface->work_response (m_plugin_instance->m_lv2_handle, item.first, &item.second[0]);
           }
@@ -315,23 +328,28 @@ namespace horst {
 
       lilv_instance_run (m_plugin_instance->m, nframes);
 
-      if (interface && interface->end_run) {
+      if (interface && interface->end_run) 
+      {
         interface->end_run (m_plugin_instance->m_lv2_handle);
       }
     }
 
-    const std::string urid_unmap (LV2_URID urid) {
-      if (urid >= m_mapped_uris.size ()) {
+    const std::string urid_unmap (LV2_URID urid) 
+    {
+      if (urid >= m_mapped_uris.size ()) 
+      {
         throw std::runtime_error ("URID out of bounds");
       }
 
       return m_mapped_uris[urid];
     }
 
-    LV2_URID urid_map (const char *uri) {
+    LV2_URID urid_map (const char *uri) 
+    {
       auto it = std::find (m_mapped_uris.begin (), m_mapped_uris.end (), uri);
       LV2_URID urid = it - m_mapped_uris.begin ();
-      if (it == m_mapped_uris.end ()) {
+      if (it == m_mapped_uris.end ()) 
+      {
         m_mapped_uris.push_back (uri);
       }
 
@@ -342,29 +360,34 @@ namespace horst {
       return urid;
     }
 
-    int number_of_items (const int &head, const int &tail, const size_t &size) {
+    int number_of_items (const int &head, const int &tail, const size_t &size) 
+    {
       const int items = (head >= tail) ? (head - tail) : (head + size - tail);
       // DBG("#items: " << items) 
       return items;
     }
 
-    void advance (std::atomic<size_t> &item, const size_t &size) {
+    void advance (std::atomic<size_t> &item, const size_t &size) 
+    {
       DBG("advance: " << item);
       int prev = item;
       item = (prev + 1) % size;
       DBG("advanced: " << item)
     }
 
-    LV2_Worker_Status schedule_work (uint32_t size, const void *data) {
+    LV2_Worker_Status schedule_work (uint32_t size, const void *data) 
+    {
       DBG_ENTER
       if (m_worker_quit == true) {
         DBG("quit!")
         return LV2_WORKER_ERR_UNKNOWN;
       }
 
-      if (m_worker_interface) {
+      if (m_worker_interface) 
+      {
         DBG("schedule_work")
-        if (number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) < (int)m_work_items.size() - 1) {
+        if (number_of_items (m_work_items_head, m_work_items_tail, m_work_items.size ()) < (int)m_work_items.size() - 1) 
+        {
           if (size > HORST_WORK_ITEM_MAX_SIZE) return LV2_WORKER_ERR_NO_SPACE;
 
           auto &item = m_work_items[m_work_items_head];
@@ -382,9 +405,11 @@ namespace horst {
       return LV2_WORKER_ERR_UNKNOWN;
     }
 
-    LV2_Worker_Status worker_respond (uint32_t size, const void *data) {
+    LV2_Worker_Status worker_respond (uint32_t size, const void *data) 
+    {
       DBG_ENTER
-      if (m_worker_interface) {
+      if (m_worker_interface) 
+      {
         DBG("respond.");
         if (size > HORST_WORK_ITEM_MAX_SIZE) return LV2_WORKER_ERR_NO_SPACE;
         auto &item = m_work_responses[m_work_responses_head];
@@ -396,7 +421,8 @@ namespace horst {
       return LV2_WORKER_SUCCESS;
     }
 
-    void *worker_thread () {
+    void *worker_thread () 
+    {
       // TODO: Use a condition variable to signal the worker thread instead of busy looping
       DBG_ENTER
       while (!m_worker_quit) 
@@ -448,7 +474,8 @@ namespace horst {
       }
     }
 
-    ~lv2_plugin () {
+    ~lv2_plugin () 
+    {
       DBG_ENTER
       if (m_worker_required)
       {
@@ -461,20 +488,25 @@ namespace horst {
     }
   };
 
-  extern "C" {
-    LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri) {
+  extern "C" 
+  {
+    LV2_URID urid_map (LV2_URID_Map_Handle handle, const char *uri) 
+    {
       return ((lv2_plugin*)handle)->urid_map(uri);
     }
 
-    LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data) {
+    LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data) 
+    {
       return  ((lv2_plugin*)handle)->schedule_work (size, data);
     }
 
-    LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data) {
+    LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data) 
+    {
       return ((lv2_plugin*)handle)->worker_respond (size, data);
     }
 
-    void *worker_thread (void *arg) {
+    void *worker_thread (void *arg) 
+    {
       return ((lv2_plugin*)arg)->worker_thread ();
     }
 
