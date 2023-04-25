@@ -46,30 +46,37 @@
 
 #include <horst/unit.h>
 
-namespace horst {
-
-  extern "C" {
-    void dli_fname_test () {
+namespace horst 
+{
+  extern "C" 
+  {
+    void dli_fname_test () 
+    {
 
     }
   }
 
-  struct connection {
+  struct connection 
+  {
     const std::string m_from;
     const std::string m_to;
     connection (const std::string &from, const std::string &to) :
-      m_from (from), m_to (to) {
+      m_from (from), m_to (to) 
+    {
 
     }
   };
 
-  struct connections {
+  struct connections 
+  {
     std::vector<connection> m;
-    void add (const connection &c) {
+    void add (const connection &c) 
+    {
       m.push_back (c);
     }
 
-    void add (const std::string &from, const std::string &to) {
+    void add (const std::string &from, const std::string &to) 
+    {
       m.push_back (connection (from, to));
     }
   };
@@ -98,7 +105,9 @@ namespace horst {
         m_horst_dli_fname = dl_info.dli_fname;
         DBG("horst_dli_fname: " << m_horst_dli_fname)
         // std::cout << "horst: horst_dli_fname: " << m_horst_dli_fname << "\n";
-      } else {
+      } 
+      else 
+      {
         throw std::runtime_error ("horst: horst: Failed to find horst dli_fname");
       }
 
@@ -107,7 +116,9 @@ namespace horst {
         m_jack_dli_fname = dl_info.dli_fname;
         DBG("jack_dli_fname: " << m_jack_dli_fname)
         // std::cout << "horst: jack_dli_fname: " << m_jack_dli_fname << "\n";
-      } else {
+      } 
+      else 
+      {
         throw std::runtime_error ("horst: horst: Failed to find jack dli_fname");
       }
 
