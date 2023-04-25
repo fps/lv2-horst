@@ -52,6 +52,8 @@ PYBIND11_MODULE(horst, m)
     .def ("set_audio_input_monitoring_enabled", &horst::plugin_unit::set_audio_input_monitoring_enabled)
     .def ("set_audio_output_monitoring_enabled", &horst::plugin_unit::set_audio_output_monitoring_enabled)
     .def ("get_jack_client_name", &horst::plugin_unit::get_jack_client_name)
+    .def ("save_state", &horst::plugin_unit::save_state)
+    .def ("restore_state", &horst::plugin_unit::restore_state)
   ;
 
   bp::class_<horst::horst, horst::horst_ptr> (m, "horst")

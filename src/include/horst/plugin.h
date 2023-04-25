@@ -23,6 +23,8 @@ namespace horst {
     LV2_Worker_Status schedule_work (LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     void *worker_thread (void *);
     LV2_Worker_Status worker_respond (LV2_Worker_Respond_Handle handle, uint32_t size, const void *data);
+    LV2_State_Status state_store (LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags);
+    const void *state_retrieve (LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags);
   }
 
   #define HORST_WORK_ITEMS 32
@@ -51,6 +53,7 @@ namespace horst {
     std::vector<LV2_Options_Option> m_options;
 
     LV2_State_Interface *m_state_interface;
+    bool m_state_interface_required;
 
     LV2_Worker_Schedule m_worker_schedule;
     std::atomic<LV2_Worker_Interface*> m_worker_interface;
@@ -81,6 +84,51 @@ namespace horst {
     LV2_Feature m_worker_feature;
     std::vector<LV2_Feature*> m_supported_features;
 
+    void check_features (bool required)
+    {
+      LilvNodes *features = required 
+        ? 
+          lilv_plugin_get_required_features (m_lilv_plugin->m) 
+        : 
+          lilv_plugin_get_optional_features (m_lilv_plugin->m);
+
+      if (features != 0) {
+        std::stringstream s;
+        LILV_FOREACH(nodes, i, features) {
+          const LilvNode *node = lilv_nodes_get (features, i);
+          std::string feature_uri =  lilv_node_as_uri (node);
+          if (feature_uri == LV2_WORKER__schedule) m_worker_required = true;
+          bool supported = false;
+          for (size_t feature_index = 0; feature_index < m_supported_features.size () - 1; ++feature_index) 
+          {
+            if (m_supported_features[feature_index]->URI == feature_uri) {
+              if (feature_uri == m_power_of_two_block_length_feature.URI) {
+                m_fixed_block_length_required = true;
+                m_power_of_two_block_length_required = true;
+              }
+              if (feature_uri == m_fixed_block_length_feature.URI || feature_uri == m_coarse_block_length_feature.URI) {
+                m_fixed_block_length_required = true;
+              }
+              supported = true;
+              break;
+            }
+          }
+          if (!supported)
+          {
+            if  (required) {
+              lilv_nodes_free (features);
+              throw std::runtime_error ("horst: lv2_plugin: Unsupported feature: " + feature_uri);
+            }
+            else
+            {
+              DBG("Unsupported optional feature: " << feature_uri)
+            }
+          }
+        }
+        lilv_nodes_free (features);
+      }
+    }
+
     lv2_plugin (lilv_world_ptr world, lilv_plugins_ptr plugins, const std::string &uri) :
       m_lilv_world (world),
       m_lilv_plugins (plugins),
@@ -93,6 +141,7 @@ namespace horst {
       m_uri (uri),
 
       m_state_interface (0),
+      m_state_interface_required (false),
 
       m_worker_schedule { (LV2_Worker_Schedule_Handle)this, horst::schedule_work },
       m_worker_interface (0),
@@ -143,62 +192,8 @@ namespace horst {
       m_supported_features.push_back (&m_worker_feature);
       m_supported_features.push_back (0);
 
-      LilvNodes *features = lilv_plugin_get_required_features (m_lilv_plugin->m);
-      if (features != 0) {
-        std::stringstream s;
-        LILV_FOREACH(nodes, i, features) {
-          const LilvNode *node = lilv_nodes_get (features, i);
-          std::string feature_uri =  lilv_node_as_uri (node);
-          if (feature_uri == LV2_WORKER__schedule) m_worker_required = true;
-          bool supported = false;
-          for (size_t feature_index = 0; feature_index < m_supported_features.size () - 1; ++feature_index) {
-            if (m_supported_features[feature_index]->URI == feature_uri) {
-              if (feature_uri == m_power_of_two_block_length_feature.URI) {
-                m_fixed_block_length_required = true;
-                m_power_of_two_block_length_required = true;
-              }
-              if (feature_uri == m_fixed_block_length_feature.URI || feature_uri == m_coarse_block_length_feature.URI) {
-                m_fixed_block_length_required = true;
-              }
-              supported = true;
-              break;
-            }
-          }
-          if (!supported) {
-            lilv_nodes_free (features);
-            throw std::runtime_error ("horst: lv2_plugin: Unsupported feature: " + feature_uri);
-          }
-        }
-        lilv_nodes_free (features);
-      }
-
-      features = lilv_plugin_get_optional_features (m_lilv_plugin->m);
-      if (features != 0) {
-        std::stringstream s;
-        LILV_FOREACH(nodes, i, features) {
-          const LilvNode *node = lilv_nodes_get (features, i);
-          std::string feature_uri =  lilv_node_as_uri (node);
-          if (feature_uri == LV2_WORKER__schedule) m_worker_required = true;
-          bool supported = false;
-          for (size_t feature_index = 0; feature_index < m_supported_features.size () - 1; ++feature_index) {
-            if (m_supported_features[feature_index]->URI == feature_uri) {
-              if (feature_uri == m_power_of_two_block_length_feature.URI) {
-                m_fixed_block_length_required = true;
-                m_power_of_two_block_length_required = true;
-              }
-              if (feature_uri == m_fixed_block_length_feature.URI || feature_uri == m_coarse_block_length_feature.URI) {
-                m_fixed_block_length_required = true;
-              }
-              supported = true;
-              break;
-            }
-          }
-          if (!supported) {
-            DBG("Unsupported optional feature: " << feature_uri)
-          }
-        }
-        lilv_nodes_free (features);
-      }
+      check_features (true);
+      check_features (false);
 
       #ifdef HORST_DEBUG
       lilv_uri_node required_options_uri (world, LV2_OPTIONS__requiredOption);
@@ -214,6 +209,7 @@ namespace horst {
       if (lilv_plugin_has_extension_data (m_lilv_plugin->m, state_extension_node.m))
       {
         DBG("Has state extension")
+        m_state_interface_required = true;
       }
 
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
@@ -288,6 +284,10 @@ namespace horst {
 
       DBG("worker interface: " << m_worker_interface);
 
+      if (m_state_interface_required) m_state_interface = (LV2_State_Interface*)lilv_instance_get_extension_data (m_plugin_instance->m, LV2_STATE__interface);
+
+      DBG("state interface: " << m_state_interface);
+
       if (m_worker_interface)
       {
         DBG((void*)(m_worker_interface.load ()->work) << " " << (void*)(m_worker_interface.load ()->work_response) << " " << (void*)(m_worker_interface.load ()->end_run));
@@ -318,6 +318,14 @@ namespace horst {
       if (interface && interface->end_run) {
         interface->end_run (m_plugin_instance->m_lv2_handle);
       }
+    }
+
+    const std::string urid_unmap (LV2_URID urid) {
+      if (urid >= m_mapped_uris.size ()) {
+        throw std::runtime_error ("URID out of bounds");
+      }
+
+      return m_mapped_uris[urid];
     }
 
     LV2_URID urid_map (const char *uri) {
@@ -416,6 +424,30 @@ namespace horst {
       return 0;
     }
 
+    void save_state (const std::string &path) 
+    {
+      if (m_state_interface) 
+      {
+        m_state_interface->save (m_plugin_instance->m_lv2_handle, state_store, 0, 0, 0);
+      }
+      else
+      {
+        DBG("No state interface - not saving")
+      }
+    }
+
+    void restore_state (const std::string &path) 
+    {
+      if (m_state_interface) 
+      {
+        m_state_interface->restore (m_plugin_instance->m_lv2_handle, state_retrieve, 0, 0, 0);
+      }
+      else
+      {
+        DBG("No state interface - not restoring")
+      }
+    }
+
     ~lv2_plugin () {
       DBG_ENTER
       if (m_worker_required)
@@ -444,6 +476,20 @@ namespace horst {
 
     void *worker_thread (void *arg) {
       return ((lv2_plugin*)arg)->worker_thread ();
+    }
+
+    LV2_State_Status state_store (LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags)
+    {
+      DBG_ENTER_EXIT
+      DBG("key: " << key << " size: " << size << " type: " << type << " flags: " << flags)
+      return LV2_STATE_ERR_UNKNOWN;
+    }
+
+    const void *state_retrieve (LV2_State_Handle handle, uint32_t key, size_t *size, uint32_t *type, uint32_t *flags)
+    {
+      DBG_ENTER_EXIT
+      DBG("key: " << key << " size: " << size << " type: " << type << " flags: " << flags)
+      return 0;
     }
   }
 

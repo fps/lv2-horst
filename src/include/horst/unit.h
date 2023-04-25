@@ -430,6 +430,16 @@ namespace horst
     void set_audio_output_monitoring_enabled (bool enabled) {
       m_atomic_audio_output_monitoring_enabled = enabled;
     }
+
+    void save_state (const std::string &path)
+    {
+      m_plugin->save_state (path);
+    }
+
+    void restore_state (const std::string &path)
+    {
+      m_plugin->restore_state (path);
+    }
   };
 
   typedef std::shared_ptr<plugin_unit> plugin_unit_ptr;

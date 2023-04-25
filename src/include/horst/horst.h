@@ -21,6 +21,8 @@
 #include <lv2/atom/atom.h>
 #include <lv2/worker/worker.h>
 #include <lv2/state/state.h>
+#include <lv2/patch/patch.h>
+#include <lv2/parameters/parameters.h>
 
 #include <dlfcn.h>
 #include <time.h>
