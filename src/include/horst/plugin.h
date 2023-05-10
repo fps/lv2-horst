@@ -32,12 +32,20 @@ namespace horst
   #define HORST_WORK_ITEMS 32
   #define HORST_WORK_ITEM_MAX_SIZE (1024 * 10)
 
+  struct writable_parameter
+  {
+    std::string m_label;
+    LV2_URID m_range;
+  };
+
   struct lv2_plugin 
   {
     lilv_world_ptr m_lilv_world;
     lilv_plugins_ptr m_lilv_plugins;
     lilv_uri_node_ptr m_lilv_plugin_uri;
     lilv_plugin_ptr m_lilv_plugin;
+
+    std::vector<writable_parameter> m_writable_parameters;
 
     std::vector<port_properties> m_port_properties;
 
@@ -215,6 +223,21 @@ namespace horst
         DBG("Has state extension")
         m_state_interface_required = true;
       }
+
+      lilv_uri_node patch_writable_uri_node (m_lilv_world, LV2_PATCH__writable);
+      LilvNodes *patch_writables = lilv_world_find_nodes (m_lilv_world->m, m_lilv_plugin->m_uri_node->m, patch_writable_uri_node.m, 0);
+      LILV_FOREACH (nodes, i, patch_writables) {
+        const LilvNode *node = lilv_nodes_get (patch_writables, i);
+        DBG("patch writable: " << lilv_node_as_string (node))
+
+        lilv_uri_node range_node (m_lilv_world, "http://www.w3.org/1999/02/22-rdf-syntax-ns#range");
+        LilvNode* writable = lilv_world_get (m_lilv_world->m, node, range_node.m, 0);
+        if (writable)
+        {
+          DBG("range: " << lilv_node_as_string(writable));
+        }
+      }
+      lilv_nodes_free (patch_writables);
 
       lilv_uri_node input (world, LILV_URI_INPUT_PORT);
       lilv_uri_node output (world, LILV_URI_OUTPUT_PORT);
